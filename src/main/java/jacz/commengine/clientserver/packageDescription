@@ -1,0 +1,75 @@
+PAQUETE NIVEL_CLIENTE_SERVIDOR
+------------------------------
+
+-------------------------------
+- last update: 03 - 02 - 2007 -
+-------------------------------
+
+
+
+DESCRIPCION
+-----------
+
+Este paquete se encarga de ofrecer los servicios del nivel cliente-servidor. As�, permite establecer una conexi�n
+entre e1 servidor y N clientes. En concreto, dicho servidor y cada uno de los clientes debera hacer uso de una clase
+espec�fica: ModuloServidor y ModuloCliente respectivamente. Ambos usan comunicaci�n a nivel de channel.
+
+
+
+TAREAS PARA FUTURO
+------------------
+
+- Cambiar esquema de nuevas conexiones. Disponer de una cola de threads que aceptan nuevas conexiones
+(bien en ModuloServidor, bien en AceptadorPeticiones). AceptadorPeticiones saca threads de aqui para nuevas
+peticiones, el thread la trata debidamente, y se vuelve a meter el solo en la cola). Con una cola de 20 threads
+ser�a m�s que de sobra).
+- Todos los clientes son iguales, de las distinciones se ocupara el nivel superior. Pero este nivel podria ofrecer
+servicios para distinguir o identificar clientes (con distintos privilegios o canales, etc).
+- ListaJugadores? Hacer un manejo m�s complejo y din�mico. Permitir cambiar el m�ximo de jugadores de forma din�mica
+- Tal y como ser�, un mens de alta prioridad de jugador1 puede tratarse mas tarde que un mens de baja prioridad
+de jugador2. Tal vez eso deba cambiarse en un futuro -> una cola para cada channel, y se unifica en la cola general
+- Ahora siempre exige un alm
+- Falta funcionalidad en el cliente para desconectar (tb en el servidor)
+
+
+DESCRIPCION DE LAS CLASES
+-------------------------
+
+- ModuloServidor: ofrece servicios a aplicaciones superiores para implementar un servidor. Ofrece servicios de
+escucha y conexi�n de clientes.
+  - Constructor: permite inicializar el servidor, especificando el port de escucha, y el n�mero m�ximo de
+  clientes permitidos. Tambien se especifican...
+  - arrancarServidor: lanza el servidor
+  - read: lee un message de un cliente
+  - write: envia un message a uno o varios clientes
+- InicModuloServidor: contiene los parametros de inicializacion del ModuloServidor
+- ModuloCliente: ofrece servicios a aplicaciones servidores para implementar un cliente. Ofrece servicios de
+escucha y conexion a servidores
+  - write: escribe un message al servidor
+- InicModuloCliente: contiene los parametros de inicializacion del ModuloCliente
+- AceptadorPeticiones: implementa un thread encargado unicamente de escuchar peticiones de conexion
+- AceptadorConexion: implementa un thread cuya unica tarea es la de tratar la conexion de nuevos clientes
+- AccionClienteServidor: interfaz que ofrece la posibilidad de delegar las acciones a llevar a cabo al llegar un
+nuevo message en el propio paquete
+- ImplAccionCanal: implementa las acciones que debe realizar el servidor al llegar un message de un cliente por un
+channel. Almacena los mensajes entrantes en la cola de mensajes del servidor
+- LectorMensajes: thread encargado de mandar los mensajes entrantes a la aplicacion superir (cliente o servidor)
+- ListaClientes: mantiene una lista de los clientes conectados en cada momento. Adem�s guarda para cada uno
+el identificador de su ModuloCanal e informacion adicional de usuario
+- CommunicationPoint: un punto de comunicaci�n duplex con otro extremo, ya sea cliente o servidor. Ofrece
+funcionalidades de alto nivel para transmitir (compresi�n, codificaci�n, etc).
+
+
+HISTORIAL DE CAMBIOS
+--------------------
+
+16-03-08: Mejorado el c�digo de ListaClientes, ahora se usa deb�damente
+15-03-08: Mejorada la documentacion de este paquete
+03-02-07: Actualizado ModuloCliente para acometer los cambios del nivel channel
+03-02-07: Mejorada la documentacion de este paquete
+21-01-07: ModuloCliente ya no usa una cola. Simplemente le dice al modulo channel como tratar los mensajes
+21-01-07: nueva clase InicModuloCliente, con los parametros de inicializacion de ModuloCliente
+17-12-06: nueva clase LectorMensajes, eliminada LectorMensajesServidor
+17-12-06: nueva clase ModuloClienteServidor. De ella heredan ModuloCliente y ModuloServidor
+17-12-06: nueva clase ModuloCliente
+07-12-06: a�adido el parametro channel a todas las funciones de envio de mensajes (faltaban)

@@ -1,0 +1,55 @@
+PAQUETE NIVEL_COMUNICACION
+--------------------------
+
+-------------------------------
+- last update: 28 - 07 - 2008 -
+-------------------------------
+
+
+
+DESCRIPCION
+-----------
+
+Este paquete se encarga de la comunicacion a m�s bajo nivel (nivel de comunicacion).
+Tan s�lo maneja la transmisi�n de objetos de un punto a otro, sin establecimiento de conexi�n.
+Ofrece un esquema de conexi�n 1-1
+
+Ofrece:
+ - Transmitir objetos a otro punto de conexi�n mediante TCP(la conexi�n se le debe dar establecida previamente)
+ - Control b�sico de eventos (errores, incidentes, desconexiones y conexiones nuevas)
+
+
+
+tareas futuras
+--------------
+
+- Comunicacion por UDP
+- Control de errores e incidentes
+
+
+
+DESCRIPCION DE LAS CLASES
+-------------------------
+
+- ModuloComunicacion: clase principal del paquete, que ofrece servicios a los niveles superiores.
+  - constructor: inicializa la conexion con otro ModuloComunicacion (dando su objectinputstream y objectoutputstream
+  ya creados)
+  - read: lee un AbstractMessage (bloqueante)
+  - write: envia un AbstractMessage
+- AbstractMessage: objeto abstracto que se transmite a este nivel. Se deben definir herencias de esta clase
+para realizar la transmisi�n
+MessageReader: thread encargado de leer los mensajes entrantes y encolarlos en la
+cola de ModuloComunicacion. Los mensajes se quedan siempre ah� esperando ser tratados por el nivel superior
+(no se ofrece tratamiento de mensajes autom�tico). De esta forma se evita la satiraci�n del objectinputstream
+
+
+
+
+HISTORIAL DE CAMBIOS
+--------------------
+
+cada uno de los cambios realizados en el paquete, con su fecha (arriba los m�s recientes)
+
+16-12-2008: Finalizada la implementaci�n y pruebas de este paquete. Queda tratar las incidencias
+14-12-2008: Mejorada documentaci�n del paquete
+28-07-2008: C�digo de este m�dulo movido a proyecto independiente, para mayor flexibilidad y mantenibilidad

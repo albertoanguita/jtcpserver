@@ -1,0 +1,89 @@
+PAQUETE NIVEL_CANAL
+-------------------
+
+-------------------------------
+- last update: 28 - 01 - 2007 -
+-------------------------------
+
+
+
+DESCRIPCION GENERAL
+-------------------
+
+Este paquete contiene las clases que conforman la comunicaci�n a nivel de canal.
+
+Este nivel se sit�a justo por encima del nivel de comunicacion (paquete nivel_comunicacion),
+y ofrece dos servicios adicionales:
+
+  - Multiplexaci�n a nivel de canal: se ofrecen 256 canales de comunicaci�n independientes. Cada uno
+  de ellos podr� tener caracter�sticas distintas en cuanto a prioridad y protocolos empleados (TCP/UDP).
+
+  - Interfaz de accion: ofrece la posibilidad de asignar acciones a los mensajes entrantes, pudiendo asi
+  delegarse la tarea de estar pendiente de los mensajes entrantes a este propio paquete.
+
+
+
+tareas futuras
+--------------
+
+- No se puede escoger protocolo (s�lo hay TCP) ni prioridad. Tampco hay paralelismo entre los canales.
+Esto requerira el uso de m�s colas y m�s threads
+- Accion canal no trata errores de conexion. Debe ser incluido
+- Errores en ModuloCanal
+- Usar el propio ModuloComunicacion como almacenador de los mensajes, evitar asi uso de una cola aparte
+- Para ofrecer prioridad los mens deberian guardarse en una cola para cada canal, y de ahi a la cola unificada
+- Eliminar threads al finalizar el ModuloCanal, y evitar los warnings de ModuloCanal
+
+
+
+DESCRIPCION DE LAS CLASES
+-------------------------
+
+- ModuloCanal: clase principal, ofrece los servicios a los niveles superiores
+  - Constructor: permite inicializar el modulo, dado un socket y una lista de canales (opcionalmente lista de acciones)
+  Las acciones pueden ser a�adidas m�s adelante
+  - write: env�a un mensaje
+- InicModuloCanal: parametros de inicializacion de ModuloCanal
+- MensajeCanal: objetos que se transmiten a este nivel
+- ImplAccionComunicacion: clase que implementa el interfaz AccionCommEngine, para que el nivel de comunicacion
+trate los errores debidamente
+- LectorMensajesComunicacion: thread encargado de leer mensajes del modulo de comunicacion y tratarlos
+debidamente. Es creado por el ModuloCanal
+la clase ModuloCanal (se encolan sin mas, no se analizan ni tratan). Se hace siempre
+- AccionCanal: interfaz que se ofrece a los niveles superiores, para el tratamiento automatico de mensajes.
+Su uso es obligatorio
+- ArrayModulosCanal: punto de interfaz con la capa superior. Ofrece un conjunto de ModulosCanal, identificados
+por Integers
+- ColaMensajesModulo: cola de mensajes de modulo. En ella los modulos de un array de modulos introducen los mensajes
+que les llegan, para asi serializarlos
+- ContenedorAccionesModulo: alamcen de las acciones que debe realizar cada modulo al recibir un mensaje. Son guardadas
+aqu� puesto que los modulos de un array no deben m�s que introducir los mensajes en la cola indicada. El array de
+modulos se encargara de actualizar este contenedor a medida que se creen nuevos modulos, y el thread
+LectorMensajesModulo lo leera para realizar las acciones
+- LectorMensajesModulo: thread encargado de realizar las acciones para cada mensaje de modulo. Lee los mensajes de
+la ColaMensajesModulo y ejecuta las acciones almacenadas en el ContenedorAccionesModulo
+- MensajeModulo: MensajeCanal pero ademas almacena el identificador del modulo al que pertenece
+
+
+
+HISTORIAL DE CAMBIOS
+--------------------
+
+22-12-08: Ahora se pasa un �nico objeto AccionCanal, pues este se encarga de tratar todos los mensajes entrantes
+          (es responsabilidad de la capa superior dar una clase que soporte concurrencia si se quieren usar
+          m�ltiples threads)
+28-01-07: A�adida la clase ArrayModulosCanal. Permite el uso simultaneo de varios modulos canal
+          (ideal para servidores)
+          ModuloCanal ahora carece de cola de mensajes, ya que son tratados al recibirlos del modulo
+          de comunicacion
+          Los dos threads que creaba ModuloCanal han pasado a ser uno s�lo, que lee mensajes directamente
+          del modulo de comunicacion y los trata debidamente
+          Creados la cola de mensajes de modulo, el contenedor de acciones y el thread LectorMensajesModulo
+21-01-07: Todos los canales requieren ahora accion asociada (no deja elegir). Por sencillez. De esta forma
+          ahora hay 1 constructor en vez de 2.
+21-01-07: incluida la clase InicModuloCanal.
+07-12-06: eliminado a�adirAccionLectorCanal de ModuloCanal. Todos los AccionCanal deberan ser especificados
+          al principio. Por simplicidad.
+07-12-06: eliminada la posibilidad de lectura directa. Siempre sera mediante implementacion de AccionCanal.
+          Por simplicidad.
+16-11-06: mejora en la documentacion de este paquete.
