@@ -26,8 +26,8 @@ public class AccionCanal2_Server implements ChannelAction {
     }
 
     @Override
-    public void channelsFreed(ChannelConnectionPoint ccp, Set<Byte> channels) {
-        System.out.println("Channels freed: " + channels);
+    public void channelFreed(ChannelConnectionPoint ccp, byte channel) {
+        System.out.println("Channels freed: " + channel);
     }
 
     public void newMessage(ChannelConnectionPoint ccp, byte canal, byte[] data) {

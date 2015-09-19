@@ -48,10 +48,10 @@ public interface ChannelAction {
      * During the execution of this method, no other thread can access synchronized code of the cpp (for example,
      * to register new FSMs), it is synchronized and occupied by the thread executing this method
      *
-     * @param ccp      ChannelConnectionPoint to which the freed channels are associated to
-     * @param channels list of channels freed
+     * @param ccp     ChannelConnectionPoint to which the freed channels are associated to
+     * @param channel channel freed
      */
-    public void channelsFreed(ChannelConnectionPoint ccp, Set<Byte> channels);
+    public void channelFreed(ChannelConnectionPoint ccp, byte channel);
 
     /**
      * The Channel module has been disconnected due to this end or the other communication end closing the connection

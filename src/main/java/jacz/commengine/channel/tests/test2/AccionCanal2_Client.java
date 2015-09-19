@@ -24,11 +24,8 @@ public class AccionCanal2_Client implements ChannelAction {
     }
 
     @Override
-    public void channelsFreed(ChannelConnectionPoint ccp, Set<Byte> channels) {
-        System.out.println("Channels freed: " + channels);
-        for (byte channel : channels) {
-
-        }
+    public void channelFreed(ChannelConnectionPoint ccp, byte channel) {
+        System.out.println("Channels freed: " + channel);
     }
 
     public void disconnected(ChannelConnectionPoint ccp, boolean expected) {

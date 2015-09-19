@@ -33,8 +33,8 @@ public class AccionCanal1 implements ChannelAction {
     }
 
     @Override
-    public void channelsFreed(ChannelConnectionPoint ccp, Set<Byte> channels) {
-        System.out.println("Channels freed: " + channels);
+    public void channelFreed(ChannelConnectionPoint ccp, byte channel) {
+        System.out.println("Channel freed: " + channel);
     }
 
     public void disconnected(ChannelConnectionPoint ccp, boolean expected) {

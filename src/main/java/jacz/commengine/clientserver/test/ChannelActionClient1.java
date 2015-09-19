@@ -31,8 +31,8 @@ class ChannelActionClient1 implements ChannelAction {
     }
 
     @Override
-    public void channelsFreed(ChannelConnectionPoint channelConnectionPoint, Set<Byte> bytes) {
-        System.out.println("Channels freed " + bytes);
+    public void channelFreed(ChannelConnectionPoint channelConnectionPoint, byte channel) {
+        System.out.println("Channels freed " + channel);
     }
 
     public void disconnected(ChannelConnectionPoint channelConnectionPoint, boolean expected) {

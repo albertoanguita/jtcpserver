@@ -22,11 +22,6 @@ import java.net.Socket;
  * of bandwidth). If the length of the array is between 255 and 65535, then the overhead is 3 bytes. Finally, for any
  * greater lengths, the overhead will be 7 bytes.
  * <p/>
- * An associated interface (CommunicationAction) must be passed to this module. This contains methods that are invoked
- * upon termination of communications or upon error in this module. Only one of them will be invoked in each execution,
- * and only once. At the same time, the inner queue in this module will store a StopReadingMessages object when
- * communications are terminated (either with stop or with error).
- * <p/>
  * A disconnected module cannot be again reconnected. A new module should be created to do this.
  * <p/>
  * All public methods in this class are thread-safe
@@ -50,11 +45,6 @@ public class CommunicationModule {
     private boolean manuallyDisconnected;
 
     /**
-     * Indicates if either one of stop or error methods have been invoked. To avoid doing it twice
-     */
-//    private boolean stopOrErrorIssued;
-
-    /**
      * The socket of this communication
      */
     private Socket socket;
@@ -63,11 +53,6 @@ public class CommunicationModule {
      * Output stream for sending messages to the other point
      */
     private ObjectOutputStream oos;
-
-    /**
-     * Actions to perform upon stop or error
-     */
-//    private CommunicationAction communicationAction;
 
     /**
      * Fixed size array for sending the one-byte overheads in the messages (this attribute is here for performance
@@ -98,7 +83,6 @@ public class CommunicationModule {
      * @throws IOException if the input and output channels cannot be correctly initialized
      */
     public CommunicationModule(String name, Socket socket) throws IOException {
-//        this.communicationAction = communicationAction;
         this.socket = socket;
         // order of these two gets cannot be modified, or it will not work
         oos = new ObjectOutputStream(socket.getOutputStream());
@@ -107,7 +91,6 @@ public class CommunicationModule {
         this.oos.flush();
         manuallyDisconnected = false;
         connected = true;
-//        stopOrErrorIssued = false;
 
         oneLengthArray = new byte[1];
         error = null;
@@ -143,6 +126,11 @@ public class CommunicationModule {
         if (!isError()) {
             // only the first error is registered
             this.error = commError;
+            try {
+                socket.close();
+            } catch (IOException e) {
+                // ignore
+            }
         }
     }
 
@@ -153,70 +141,6 @@ public class CommunicationModule {
     public synchronized CommError getError() {
         return error;
     }
-
-    /**
-     * Invoked by the MessageReaderImpl when communications are terminated. Stop must be notified to client
-     * <p/>
-     * This method must never be invoked while holding the communication module in synchronized mode.
-     */
-//    void stopped() {
-//        // if we were still connected, it means that our end did not request the disconnection, and thus it is due
-//        // to the other end. If we were already disconnected, it was our end who requested it.
-//        // In fact it can happen that our end requested the disconnection, but also the other end and the stopped
-//        // invocation was really due to the other end, although we will inform that it was due to our end. It does
-//        // not really matter because after all our end had requested the disconnection, so it is irrelevant if the
-//        // other end had requested it too at the same moment
-//        // stopped notification is never issued while holding the communication module in synchronized mode
-//        boolean notifyStop = false;
-//        boolean notificationArgument = false;
-//        //synchronized (this) {
-//        //    if (!stopOrErrorIssued) {
-//        //        notifyStop = true;
-//        if (connected) {
-//            disconnect();
-//            notificationArgument = false;
-//        } else {
-//            notificationArgument = true;
-//        }
-//        stopOrErrorIssued = true;
-//        //    }
-//        //}
-//        //if (notifyStop) {
-//        communicationAction.stopped(notificationArgument);
-//        //}
-//    }
-
-    /**
-     * Invoked when an exception during execution was raised at our point. The module is disconnected. The error is notified to the client
-     * <p/>
-     * This method must never be invoked while holding the communication module in synchronized mode.
-     *
-     * @param commError the commError that was raised
-     */
-//    synchronized void error(CommError commError) {
-//        // both stop and commError cannot be notified. If one of them was already notified, any subsequent issuing of any
-//        // of them is omitted
-//        // error notification is never issued while holding the communication module in synchronized mode
-//        try {
-//            connected = false;
-//            socket.close();
-//        } catch (IOException e1) {
-//            // ignore
-//        }
-//        communicationAction.error(commError);
-//    }
-
-    /**
-     * Allows requesting the stop or error flag, so if a thread must issue a stop or an error he can request it before anyone else
-     * (requester should be in synchronized mode so no one can get in here before him)
-     *
-     * @return the result of the request: true -> can invoke stop or error methods, false -> cannot
-     */
-//    synchronized boolean requestStopOrErrorFlag() {
-//        boolean result = !stopOrErrorIssued;
-//        stopOrErrorIssued = true;
-//        return result;
-//    }
 
     /**
      * Reads a received message, blocking if there are no messages (until one is received)
@@ -288,7 +212,6 @@ public class CommunicationModule {
 
     public synchronized void write(Object message, boolean flush) {
         CommError commError = null;
-//        boolean requestStopOrErrorFlag = false;
         if (connected) {
             try {
                 // one byte containing a zero is sent before the object, to tell the other point that he must read an object
@@ -309,12 +232,7 @@ public class CommunicationModule {
         }
         if (commError != null) {
             notifyError(commError);
-//            requestStopOrErrorFlag = requestStopOrErrorFlag();
         }
-//        if (commError != null && requestStopOrErrorFlag) {
-//            //error(commError);
-//            ParallelTaskExecutor.executeTask(new ErrorTask(this, commError));
-//        }
     }
 
     /**
@@ -334,7 +252,6 @@ public class CommunicationModule {
 
     public synchronized void write(byte[] data, boolean flush) {
         CommError commError = null;
-//        boolean requestStopOrErrorFlag = false;
         // the first byte sent indicates that an array of bytes is going to be sent.
         // If the value sent is between 1 and 254, then an array of that size is sent.
         // If the value is 255, then the next two bytes indicate the size of the array (btw 255 and 2^16 - 1)
@@ -374,17 +291,11 @@ public class CommunicationModule {
         }
         if (commError != null) {
             notifyError(commError);
-//            requestStopOrErrorFlag = requestStopOrErrorFlag();
         }
-//        if (commError != null && requestStopOrErrorFlag) {
-//            //error(commError);
-//            ParallelTaskExecutor.executeTask(new ErrorTask(this, commError));
-//        }
     }
 
     public synchronized void flush() {
         CommError commError = null;
-//        boolean requestStopOrErrorFlag = false;
         if (connected) {
             try {
                 oos.flush();
@@ -394,11 +305,7 @@ public class CommunicationModule {
         }
         if (commError != null) {
             notifyError(commError);
-//                requestStopOrErrorFlag = requestStopOrErrorFlag();
         }
-//        if (commError != null && requestStopOrErrorFlag) {
-//            ParallelTaskExecutor.executeTask(new ErrorTask(this, commError));
-//        }
     }
 
     public static void writeByteArrayToStream(ObjectOutputStream oos, byte[] data) throws IOException {

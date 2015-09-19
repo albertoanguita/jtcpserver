@@ -5,8 +5,6 @@ import jacz.commengine.communication.CommError;
 import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.network.IP4Port;
 
-import java.util.Set;
-
 /**
  * This interface contains the methods required for using a ServerModule. These handle the arrival of messages from
  * clients, the connection and disconnection from clients, etc.
@@ -15,7 +13,7 @@ import java.util.Set;
  * the server. The connection method also provides the ChannelConnectionPoint for directly communicating with the
  * client, in case we prefer to bypass the ServerModule API. The client ID given always equals the ID contained in the
  * ChannelConnectionPoint object.
- *
+ * <p/>
  * Concurrency-related considerations:
  * - The newMessage methods are called by independent threads. The concurrency of these threads depends on how the concurrentChannels were set up.
  * - The channelsFreed is also called by an independent thread. Its invocation however will never overlap with any call to newMessage,
@@ -66,9 +64,9 @@ public interface ServerAction {
      *
      * @param clientID the ID of the client whose channels are freed
      * @param ccp      ChannelConnectionPoint object which frees the channels
-     * @param bytes    channels freed
+     * @param channel  channel freed
      */
-    public void channelsFreed(UniqueIdentifier clientID, ChannelConnectionPoint ccp, Set<Byte> bytes);
+    public void channelFreed(UniqueIdentifier clientID, ChannelConnectionPoint ccp, byte channel);
 
     /**
      * Method invoked when a client disconnects from the server

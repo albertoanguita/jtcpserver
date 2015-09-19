@@ -119,7 +119,7 @@ public class ChannelModule {
     /**
      * Set of channels employed if the all belong to the same concurrent channel set
      */
-    private final Set<Byte> uniqueChannelSet;
+//    private final Set<Byte> uniqueChannelSet;
 
     /**
      * Table storing all channels employed, only when there are several concurrent channel sets. For each channel,
@@ -128,16 +128,16 @@ public class ChannelModule {
      */
     private final Map<Byte, QueueAndMessageProcessor> channelQueuesAndMessageProcessors;
 
-    private final Map<Byte, List<GenericFSM<?, Object>>> channelFSMs;
+    private final Map<Byte, GenericFSM<?, Object>> channelFSMs;
 
-    private final Map<GenericFSM<?, Object>, Set<Byte>> FSMToChannel;
+    private final Map<GenericFSM<?, Object>, Byte> FSMToChannel;
 
     private final ChannelConnectionPoint channelConnectionPoint;
 
     /**
      * Message processor employed when we only use a single concurrent channel set
      */
-    private final MessageProcessor allChannelProcessor;
+//    private final MessageProcessor allChannelProcessor;
 
     /**
      * This processor is used when we have several concurrent channel sets. It is in charge of redirecting incoming
@@ -230,51 +230,19 @@ public class ChannelModule {
         this.channelAction = channelAction;
         messageProcessorSet = new HashSet<>();
 
+        channelQueuesAndMessageProcessors = new HashMap<>();
 
-        if (concurrentChannels == null) {
-            concurrentChannels = new HashSet<>();
-        }
-        if (concurrentChannels.size() == 0) {
-            // add one set with all possible channels
-            Set<Byte> allChannels = new HashSet<>();
-            byte b = Byte.MIN_VALUE;
-            boolean finished = false;
-            while (!finished) {
-                if (allChannels.contains(b)) {
-                    finished = true;
-                } else {
-                    allChannels.add(b);
-                    b++;
-                }
+        for (Set<Byte> channelList : concurrentChannels) {
+            ArrayBlockingQueue<Object> queue = new ArrayBlockingQueue<>(INCOMING_CAPACITY, INCOMING_FAIRNESS);
+            MessageProcessor messageProcessor = new MessageProcessor(name + "/chanMod", new ReaderFromQueues(queue), new MessageHandlerImpl(this), false);
+            QueueAndMessageProcessor queueAndMessageProcessor = new QueueAndMessageProcessor(queue, messageProcessor);
+            for (Byte oneChannel : channelList) {
+                channelQueuesAndMessageProcessors.put(oneChannel, queueAndMessageProcessor);
             }
-            concurrentChannels.add(allChannels);
+            messageProcessorSet.add(messageProcessor);
         }
-
-        if (concurrentChannels.size() == 1) {
-            // only one channel set, specific channels are used
-            channelQueuesAndMessageProcessors = null;
-            senderToQueues = null;
-            uniqueChannelSet = new HashSet<>(concurrentChannels.iterator().next());
-            allChannelProcessor = new MessageProcessor(name + "/chanMod", new MessageReaderImpl(this, commModule), new MessageHandlerImpl(this), false);
-            messageProcessorSet.add(allChannelProcessor);
-        } else {
-            // several channel sets are used
-            uniqueChannelSet = null;
-            allChannelProcessor = null;
-            channelQueuesAndMessageProcessors = new HashMap<>();
-
-            for (Set<Byte> channelList : concurrentChannels) {
-                ArrayBlockingQueue<Object> queue = new ArrayBlockingQueue<>(INCOMING_CAPACITY, INCOMING_FAIRNESS);
-                MessageProcessor messageProcessor = new MessageProcessor(name + "/chanMod", new ReaderFromQueues(queue), new MessageHandlerImpl(this), false);
-                QueueAndMessageProcessor queueAndMessageProcessor = new QueueAndMessageProcessor(queue, messageProcessor);
-                for (Byte oneChannel : channelList) {
-                    channelQueuesAndMessageProcessors.put(oneChannel, queueAndMessageProcessor);
-                }
-                messageProcessorSet.add(messageProcessor);
-            }
-            senderToQueues = new MessageProcessor(name + "/chanMod", new MessageReaderImpl(this, commModule), new SenderToQueues(this), false);
-            messageProcessorSet.add(senderToQueues);
-        }
+        senderToQueues = new MessageProcessor(name + "/chanMod", new MessageReaderImpl(this, commModule), new SenderToQueues(this), false);
+        messageProcessorSet.add(senderToQueues);
         channelConnectionPoint = new ChannelConnectionPoint(this, id);
         channelFSMs = new HashMap<>();
         FSMToChannel = new HashMap<>();
@@ -301,18 +269,10 @@ public class ChannelModule {
         // If we are using several threads, then the main message processor for delivering messages to specific
         // queues must be left running (so no other concurrent channel sets are affected). We will only pause the
         // message processor accessing the involved queue.
-        if (allChannelProcessor != null) {
-            if (uniqueChannelSet.contains(channel)) {
-                allChannelProcessor.pause();
-            } else {
-                throw new IndexOutOfBoundsException("Channel is not supported in this ChannelModule: " + channel);
-            }
+        if (channelQueuesAndMessageProcessors.containsKey(channel)) {
+            channelQueuesAndMessageProcessors.get(channel).messageProcessor.pause();
         } else {
-            if (channelQueuesAndMessageProcessors.containsKey(channel)) {
-                channelQueuesAndMessageProcessors.get(channel).messageProcessor.pause();
-            } else {
-                throw new IndexOutOfBoundsException("Channel is not supported in this ChannelModule: " + channel);
-            }
+            throw new IndexOutOfBoundsException("Channel is not supported in this ChannelModule: " + channel);
         }
     }
 
@@ -324,18 +284,10 @@ public class ChannelModule {
      */
     public void resume(byte channel) {
         // this is equivalent to the previous pause method, but resuming. The structure of the code is identical.
-        if (allChannelProcessor != null) {
-            if (uniqueChannelSet.contains(channel)) {
-                allChannelProcessor.resume();
-            } else {
-                throw new IndexOutOfBoundsException("Channel is not supported in this ChannelModule: " + channel);
-            }
+        if (channelQueuesAndMessageProcessors.containsKey(channel)) {
+            channelQueuesAndMessageProcessors.get(channel).messageProcessor.resume();
         } else {
-            if (channelQueuesAndMessageProcessors.containsKey(channel)) {
-                channelQueuesAndMessageProcessors.get(channel).messageProcessor.resume();
-            } else {
-                throw new IndexOutOfBoundsException("Channel is not supported in this ChannelModule: " + channel);
-            }
+            throw new IndexOutOfBoundsException("Channel is not supported in this ChannelModule: " + channel);
         }
     }
 
@@ -447,24 +399,22 @@ public class ChannelModule {
         // synchronize this section so nobody can register an FSM while this is running -> this allows
         // the final action of an FSM to state that a channel is free
         // in addition, this allows to complete the init of an FSM before it receives any message
-        List<GenericFSM<?, Object>> fsmList = null;
+//        List<GenericFSM<?, Object>> fsmList = null;
+        GenericFSM<?, Object> fsm = null;
         synchronized (this) {
             if (channelFSMs.containsKey(channel)) {
                 // copy in another list to avoid concurrency exceptions when detaching (in the detach operation we
                 // eliminate the FSM from the FSM list itself)
-                fsmList = new ArrayList<>(channelFSMs.get(channel));
+//                fsmList = new ArrayList<>(channelFSMs.get(channel));
+                fsm = channelFSMs.get(channel);
             }
         }
-        if (fsmList != null) {
-            // FSM
-            for (GenericFSM<?, Object> fsm : fsmList) {
-                if (!fsm.newInput(message)) {
-                    // detach this GenericFSM
-                    detachFSM(fsm, false);
-                }
-            }
+        if (fsm != null && !fsm.newInput(message)) {
+            // detach this GenericFSM
+            detachFSM(fsm, false);
         } else {
             // in the absence of any FSM monitoring the channel, simply send this message to the ChannelAction implementation.
+            // cannot happen, no message processor will send the message here
             if (isByteArray) {
                 channelActionNewMessage(channelConnectionPoint, channel, ((ByteArrayWrapperChannel) message).getData());
             } else {
@@ -507,14 +457,14 @@ public class ChannelModule {
      *
      * @param channelFSMAction the actions of the ChannelFSM to register
      * @param name             name of the new GenericFSM
-     * @param involvedChannels the channels that the given FSM will monitor
+     * @param channel          the channel that the given FSM will monitor
      * @param <T>              the type of the FMS states
      * @throws IllegalArgumentException if any of the following occurs:
      *                                  - No channels are given (null or empty set)
      *                                  - Any of the given channels is not supported in this ChannelModule
      *                                  - Two of the given channels belong to different handling threads
      */
-    <T> void registerNewFSM(ChannelFSMAction<T> channelFSMAction, String name, Set<Byte> involvedChannels) throws IllegalArgumentException {
+    <T> void registerNewFSM(ChannelFSMAction<T> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
         boolean canRegister;
         synchronized (this) {
             canRegister = !noMoreFSMRegistrationAccepted;
@@ -522,7 +472,7 @@ public class ChannelModule {
         if (canRegister) {
             ChannelFSM<T> channelFSM = new ChannelFSM<>(channelFSMAction, channelConnectionPoint);
             GenericFSM<T, Object> genericFSM = new GenericFSM<>(name, channelFSM);
-            registerFSM(genericFSM, involvedChannels);
+            registerFSM(genericFSM, channel);
         }
     }
 
@@ -532,14 +482,14 @@ public class ChannelModule {
      * @param timedChannelFSMAction the actions of the timed ChannelFSM to register
      * @param timeoutMillis         the timeout for this timed ChannelFSM (in millis)
      * @param name                  name of the new TimedFSM
-     * @param involvedChannels      the channels that the given FSM will monitor
+     * @param channel               the channel that the given FSM will monitor
      * @param <T>                   the type of the FMS states
      * @throws IllegalArgumentException if any of the following occurs:
      *                                  - No channels are given (null or empty set)
      *                                  - Any of the given channels is not supported in this ChannelModule
      *                                  - Two of the given channels belong to different handling threads
      */
-    <T> void registerNewFSM(TimedChannelFSMAction<T> timedChannelFSMAction, long timeoutMillis, String name, Set<Byte> involvedChannels) throws IllegalArgumentException {
+    <T> void registerNewFSM(TimedChannelFSMAction<T> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
         boolean canRegister;
         synchronized (this) {
             canRegister = !noMoreFSMRegistrationAccepted;
@@ -548,55 +498,29 @@ public class ChannelModule {
             TimedChannelFSM<T> timedChannelFSM = new TimedChannelFSM<>(this, timedChannelFSMAction, channelConnectionPoint);
             TimedFSM<T, Object> timedFSM = new TimedFSM<>(name, timedChannelFSM, timeoutMillis);
             timedChannelFSM.setGenericFSM(timedFSM);
-            registerFSM(timedFSM, involvedChannels);
+            registerFSM(timedFSM, channel);
         }
     }
 
     /**
-     * @param genericFSM       the FSM to register in this ChannelModule
-     * @param involvedChannels the channels that this FSM will be monitoring. These must be supported by this
-     *                         ChannelModule, and they all must be synchronized with each other (one thread
-     *                         handling them)
-     * @param <T>              the type of the FSM states
+     * @param genericFSM the FSM to register in this ChannelModule
+     * @param channel    the channel that this FSM will be monitoring. It must be supported by this ChannelModule
+     * @param <T>        the type of the FSM states
      * @throws IllegalArgumentException if any of the following occurs:
      *                                  - No channels are given (null or empty set)
      *                                  - Any of the given channels is not supported in this ChannelModule
      *                                  - Two of the given channels belong to different handling threads
      */
-    private <T> void registerFSM(GenericFSM<T, Object> genericFSM, Set<Byte> involvedChannels) throws IllegalArgumentException {
+    private <T> void registerFSM(GenericFSM<T, Object> genericFSM, byte channel) throws IllegalArgumentException {
         // check channels are supported and synchronized
-        if (involvedChannels == null || involvedChannels.size() == 0) {
-            throw new IllegalArgumentException("At least one channel required");
-        }
         // channel queue associated to the given channels
-        ArrayBlockingQueue channelQueue = null;
-        for (Byte oneChannel : involvedChannels) {
-            if (uniqueChannelSet != null) {
-                if (!uniqueChannelSet.contains(oneChannel)) {
-                    throw new IllegalArgumentException("Channel " + oneChannel + " is not supported in this channel module");
-                }
-            } else {
-                if (!channelQueuesAndMessageProcessors.containsKey(oneChannel)) {
-                    throw new IllegalArgumentException("Channel " + oneChannel + " is not supported in this channel module");
-                }
-                if (channelQueue == null) {
-                    channelQueue = channelQueuesAndMessageProcessors.get(oneChannel).queue;
-                } else if (channelQueue != channelQueuesAndMessageProcessors.get(oneChannel).queue) {
-                    throw new IllegalArgumentException("Channels must be synchronized (channel " + oneChannel + "");
-                }
-            }
+        if (!channelQueuesAndMessageProcessors.containsKey(channel)) {
+            throw new IllegalArgumentException("Channel " + channel + " is not supported in this channel module");
         }
         // correct channels -> register them with the new FSM, and stored the already received messages
         synchronized (this) {
-            for (Byte oneChannel : involvedChannels) {
-                if (!channelFSMs.containsKey(oneChannel)) {
-                    channelFSMs.put(oneChannel, new ArrayList<GenericFSM<?, Object>>(1));
-                }
-                channelFSMs.get(oneChannel).add(genericFSM);
-                //channelFSMs.put(oneChannel, genericFSM);
-            }
-            Set<Byte> involvedChannelsCopy = new HashSet<>(involvedChannels);
-            FSMToChannel.put(genericFSM, involvedChannelsCopy);
+            channelFSMs.put(channel, genericFSM);
+            FSMToChannel.put(genericFSM, channel);
         }
         // once we checked everything is correct, start the received FSM (it should not be already started)
         // if after started the FSM is no longer active, detach
@@ -614,7 +538,7 @@ public class ChannelModule {
         // the received genericFSM is no longer used, so it is eliminated from the active FSM lists. First we check
         // that this FSM is actually active in this ChannelModule (otherwise, ignore)
         // The channels which no longer have any FSM associated are notified to be free
-        Set<Byte> freedChannels;
+        byte freedChannel;
         synchronized (this) {
             if (!FSMToChannel.containsKey(genericFSM)) {
                 return;
@@ -623,18 +547,8 @@ public class ChannelModule {
                 // manually stop the timer so that the disconnected event is raised
                 genericFSM.stop();
             }
-            freedChannels = new HashSet<>();
-            for (Byte oneChannel : FSMToChannel.get(genericFSM)) {
-                channelFSMs.get(oneChannel).remove(genericFSM);
-                if (channelFSMs.get(oneChannel).size() == 0) {
-                    channelFSMs.remove(oneChannel);
-                    freedChannels.add(oneChannel);
-                }
-            }
-            FSMToChannel.remove(genericFSM);
-        }
-        if (!freedChannels.isEmpty()) {
-            channelActionChannelsFreed(channelConnectionPoint, freedChannels);
+            freedChannel = FSMToChannel.remove(genericFSM);
+            channelActionChannelsFreed(channelConnectionPoint, freedChannel);
         }
     }
 
@@ -678,11 +592,11 @@ public class ChannelModule {
         });
     }
 
-    public void channelActionChannelsFreed(final ChannelConnectionPoint ccp, final Set<Byte> channels) {
+    public void channelActionChannelsFreed(final ChannelConnectionPoint ccp, final byte channel) {
         sequentialTaskExecutor.executeTask(new ParallelTask() {
             @Override
             public void performTask() {
-                channelAction.channelsFreed(ccp, channels);
+                channelAction.channelFreed(ccp, channel);
             }
         });
     }

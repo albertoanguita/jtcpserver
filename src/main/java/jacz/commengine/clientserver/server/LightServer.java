@@ -1,7 +1,5 @@
 package jacz.commengine.clientserver.server;
 
-import jacz.commengine.communication.CommError;
-import jacz.commengine.communication.CommunicationAction;
 import jacz.commengine.communication.CommunicationModule;
 import jacz.commengine.tcpconnection.server.TCPServer;
 import jacz.commengine.tcpconnection.server.TCPServerAction;
@@ -21,7 +19,7 @@ import java.net.Socket;
  * The LightServer uses a TCPServer for implementing the server
  * <p/>
  */
-public class LightServer implements TCPServerAction, CommunicationAction {
+public class LightServer implements TCPServerAction {
 
     /**
      * When the light server method returns an exception, an object of this class is returned containing the thrown exception
@@ -164,15 +162,5 @@ public class LightServer implements TCPServerAction, CommunicationAction {
         } else {
             lightServerActionByteArray.TCPServerError(e);
         }
-    }
-
-    @Override
-    public void stopped(boolean expected) {
-        // communication was stopped. Ignore, since we don't want to maintain communications
-    }
-
-    @Override
-    public void error(CommError commError) {
-        // the client request could not be attended due to an error in the communication line. Ignore
     }
 }

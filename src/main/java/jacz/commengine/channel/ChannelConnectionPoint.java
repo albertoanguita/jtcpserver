@@ -3,10 +3,6 @@ package jacz.commengine.channel;
 import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.identifier.UniqueIdentifierFactory;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * This class offers simplified access to a ChannelModule. It is always associated to a ChannelModule, and offers
  * methods to write data, register FSMs and disconnect.
@@ -82,25 +78,19 @@ public class ChannelConnectionPoint {
         return channelModule.isChannelRegistered(channel);
     }
 
-    public void registerGenericFSM(ChannelFSMAction<?> channelFSMAction, Byte... involvedChannels) throws IllegalArgumentException {
-        registerGenericFSM(channelFSMAction, "unnamedGenericFSM", involvedChannels);
+    public void registerGenericFSM(ChannelFSMAction<?> channelFSMAction, byte channel) throws IllegalArgumentException {
+        registerGenericFSM(channelFSMAction, "unnamedGenericFSM", channel);
     }
 
-    public void registerGenericFSM(ChannelFSMAction<?> channelFSMAction, String name, Byte... involvedChannels) throws IllegalArgumentException {
-        // check involved channels are synchronized, and that non of the channels is already associated to another FSM
-        Set<Byte> involvedChannelSet = new HashSet<Byte>(involvedChannels.length);
-        involvedChannelSet.addAll(Arrays.asList(involvedChannels));
-        channelModule.registerNewFSM(channelFSMAction, name, involvedChannelSet);
+    public void registerGenericFSM(ChannelFSMAction<?> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
+        channelModule.registerNewFSM(channelFSMAction, name, channel);
     }
 
-    public void registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, Byte... involvedChannels) throws IllegalArgumentException {
-        registerTimedFSM(timedChannelFSMAction, timeoutMillis, "unnamedTimedFSM", involvedChannels);
+    public void registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, byte channel) throws IllegalArgumentException {
+        registerTimedFSM(timedChannelFSMAction, timeoutMillis, "unnamedTimedFSM", channel);
     }
 
-    public void registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, String name, Byte... involvedChannels) throws IllegalArgumentException {
-        // check involved channels are synchronized, and that non of the channels is already associated to another FSM
-        Set<Byte> involvedChannelSet = new HashSet<Byte>(involvedChannels.length);
-        involvedChannelSet.addAll(Arrays.asList(involvedChannels));
-        channelModule.registerNewFSM(timedChannelFSMAction, timeoutMillis, name, involvedChannelSet);
+    public void registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
+        channelModule.registerNewFSM(timedChannelFSMAction, timeoutMillis, name, channel);
     }
 }

@@ -283,8 +283,8 @@ public class ServerModule {
         serverAction.newMessage(ccp.getId(), ccp, channel, data);
     }
 
-    void reportChannelsFreed(ChannelConnectionPoint ccp, Set<Byte> channels) {
-        serverAction.channelsFreed(ccp.getId(), ccp, channels);
+    void reportChannelsFreed(ChannelConnectionPoint ccp, byte channel) {
+        serverAction.channelFreed(ccp.getId(), ccp, channel);
     }
 
     void reportClientDisconnected(ChannelConnectionPoint ccp, boolean expected) {

@@ -4,8 +4,6 @@ import jacz.commengine.channel.ChannelAction;
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.communication.CommError;
 
-import java.util.Set;
-
 /**
  * This class implements the ChannelAction interface so the incoming messages from clients and some additional
  * events are handled appropriately. The actions are delegated to a ServerAction object given by the client of the
@@ -40,8 +38,8 @@ class ChannelActionImpl implements ChannelAction {
     }
 
     @Override
-    public void channelsFreed(ChannelConnectionPoint ccp, Set<Byte> channels) {
-        serverModule.reportChannelsFreed(ccp, channels);
+    public void channelFreed(ChannelConnectionPoint ccp, byte channel) {
+        serverModule.reportChannelsFreed(ccp, channel);
     }
 
     @Override

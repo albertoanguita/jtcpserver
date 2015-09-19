@@ -58,7 +58,6 @@ public class Test1 {
     }
 
     private void initModuloComunicacion(String name, Socket socket) throws IOException {
-//        communicationModule = new CommunicationModule(socket, new CommActionImpl(name));
         communicationModule = new CommunicationModule(socket);
     }
 

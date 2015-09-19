@@ -4,7 +4,7 @@
 
   <groupId>jacz.commengine</groupId>
   <artifactId>commengine</artifactId>
-  <version>0.9</version>
+  <version>1.0a</version>
   <packaging>jar</packaging>
 
   <name>commengine</name>

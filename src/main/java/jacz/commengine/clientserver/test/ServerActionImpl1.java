@@ -8,7 +8,6 @@ import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.network.IP4Port;
 
 import java.io.IOException;
-import java.util.Set;
 
 /**
  * Class description
@@ -43,8 +42,8 @@ class ServerActionImpl1 implements ServerAction {
     }
 
     @Override
-    public void channelsFreed(UniqueIdentifier idCliente, ChannelConnectionPoint ccp, Set<Byte> bytes) {
-        System.out.println("Channels freed " + bytes);
+    public void channelFreed(UniqueIdentifier idCliente, ChannelConnectionPoint ccp, byte channel) {
+        System.out.println("Channels freed " + channel);
     }
 
     public void newClientConnection(UniqueIdentifier idCliente, ChannelConnectionPoint channelConnectionPoint, IP4Port ip4Port) {
