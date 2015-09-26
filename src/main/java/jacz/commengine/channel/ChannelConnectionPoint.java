@@ -44,24 +44,24 @@ public class ChannelConnectionPoint {
         return id.hashCode();
     }
 
-    public void write(byte channel, Object message) {
-        write(channel, message, true);
+    public long write(byte channel, Object message) {
+        return write(channel, message, true);
     }
 
-    public void write(byte channel, Object message, boolean flush) {
-        channelModule.write(channel, message, flush);
+    public long write(byte channel, Object message, boolean flush) {
+        return channelModule.write(channel, message, flush);
     }
 
-    public void write(byte channel, byte[] data) {
-        write(channel, data, true);
+    public long write(byte channel, byte[] data) {
+        return write(channel, data, true);
     }
 
-    public void write(byte channel, byte[] data, boolean flush) {
-        channelModule.write(channel, data, flush);
+    public long write(byte channel, byte[] data, boolean flush) {
+        return channelModule.write(channel, data, flush);
     }
 
-    public void flush() {
-        channelModule.flush();
+    public long flush() {
+        return channelModule.flush();
     }
 
     public void disconnect() {

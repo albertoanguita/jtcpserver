@@ -1,5 +1,6 @@
 package jacz.commengine.communication;
 
+import jacz.util.date_time.TimeElapsed;
 import jacz.util.io.object_serialization.MutableOffset;
 import jacz.util.io.object_serialization.Serializer;
 import jacz.util.queues.event_processing.MessageProcessor;
@@ -146,8 +147,8 @@ public class CommunicationModule {
      * Reads a received message, blocking if there are no messages (until one is received)
      *
      * @return the oldest received message. If an array of bytes was received, then a ByteArrayWrapper object
-     *         containing it is returned. When the communication socket is closed (either due to an error or any of the users
-     *         closing the communications) a StopReadingMessages object will be inserted in the queue
+     * containing it is returned. When the communication socket is closed (either due to an error or any of the users
+     * closing the communications) a StopReadingMessages object will be inserted in the queue
      * @throws InterruptedException the thread waiting for a message is interrupted
      */
     public Object read() throws InterruptedException {
@@ -162,7 +163,7 @@ public class CommunicationModule {
         if (oneArrayValue < 0) {
             oneArrayValue += 256;
         }
-        if (oneArrayValue > 0 && oneArrayValue <= 254) {
+        if (oneArrayValue < 255) {
             data = new byte[oneArrayValue];
         } else { //if (oneArrayValue == 255) {
             byte[] twoLengthArray = new byte[2];
@@ -180,6 +181,25 @@ public class CommunicationModule {
                 data = new byte[length];
             }
         }
+        readBytes(ois, data);
+        return data;
+    }
+
+    public static byte[] readByteArrayFromStream2(ObjectInputStream ois) throws IOException {
+        byte[] oneLengthArray = new byte[1];
+        readBytes(ois, oneLengthArray);
+        int length = Serializer.deserializeNumber(oneLengthArray, 1, new MutableOffset()).intValue();
+        if (length == 0) {
+            byte[] twoLengthArray = new byte[2];
+            readBytes(ois, twoLengthArray);
+            length = Serializer.deserializeNumber(oneLengthArray, 2, new MutableOffset()).intValue();
+            if (length == 0) {
+                byte[] fourLengthArray = new byte[4];
+                readBytes(ois, fourLengthArray);
+                length = Serializer.deserializeNumber(oneLengthArray, 4, new MutableOffset()).intValue();
+            }
+        }
+        byte[] data = new byte[length];
         readBytes(ois, data);
         return data;
     }
@@ -206,21 +226,24 @@ public class CommunicationModule {
      *
      * @param message the object to send
      */
-    public synchronized void write(Object message) {
-        write(message, true);
+    public synchronized long write(Object message) {
+        return write(message, true);
     }
 
-    public synchronized void write(Object message, boolean flush) {
+    public synchronized long write(Object message, boolean flush) {
         CommError commError = null;
+        long time = 0L;
         if (connected) {
             try {
                 // one byte containing a zero is sent before the object, to tell the other point that he must read an object
                 commError = writeOneLengthArray((byte) 0);
                 if (commError == null) {
+                    TimeElapsed timeElapsed = new TimeElapsed();
                     oos.writeObject(message);
                     if (flush) {
                         oos.flush();
                     }
+                    time = timeElapsed.measureTime();
                 }
             } catch (InvalidClassException e) {
                 commError = new CommError(CommError.Type.CLASS_CANNOT_BE_SERIALIZED, e);
@@ -233,6 +256,7 @@ public class CommunicationModule {
         if (commError != null) {
             notifyError(commError);
         }
+        return time;
     }
 
     /**
@@ -246,12 +270,13 @@ public class CommunicationModule {
      *
      * @param data the array of bytes to send.
      */
-    public synchronized void write(byte[] data) {
-        write(data, true);
+    public synchronized long write(byte[] data) {
+        return write(data, true);
     }
 
-    public synchronized void write(byte[] data, boolean flush) {
+    public synchronized long write(byte[] data, boolean flush) {
         CommError commError = null;
+        long time = 0L;
         // the first byte sent indicates that an array of bytes is going to be sent.
         // If the value sent is between 1 and 254, then an array of that size is sent.
         // If the value is 255, then the next two bytes indicate the size of the array (btw 255 and 2^16 - 1)
@@ -260,6 +285,7 @@ public class CommunicationModule {
         if (connected) {
             try {
                 if (data.length > 0) {
+                    TimeElapsed timeElapsed = new TimeElapsed();
                     if (data.length <= 254) {
                         commError = writeOneLengthArray((byte) data.length);
                     } else if (data.length > 254 && data.length < 65536) {
@@ -284,6 +310,7 @@ public class CommunicationModule {
                             oos.flush();
                         }
                     }
+                    time = timeElapsed.measureTime();
                 }
             } catch (IOException e) {
                 commError = new CommError(CommError.Type.IO_CHANNEL_FAILED_WRITING, e);
@@ -292,13 +319,17 @@ public class CommunicationModule {
         if (commError != null) {
             notifyError(commError);
         }
+        return time;
     }
 
-    public synchronized void flush() {
+    public synchronized long flush() {
         CommError commError = null;
+        long time = 0L;
         if (connected) {
             try {
+                TimeElapsed timeElapsed = new TimeElapsed();
                 oos.flush();
+                time = timeElapsed.measureTime();
             } catch (IOException e) {
                 commError = new CommError(CommError.Type.IO_CHANNEL_FAILED_WRITING, e);
             }
@@ -306,13 +337,14 @@ public class CommunicationModule {
         if (commError != null) {
             notifyError(commError);
         }
+        return time;
     }
 
     public static void writeByteArrayToStream(ObjectOutputStream oos, byte[] data) throws IOException {
         if (data.length > 0) {
-            if (data.length <= 254) {
+            if (data.length < 255) {
                 oos.write(generateOneLengthArray((byte) data.length));
-            } else if (data.length > 254 && data.length < 65536) {
+            } else if (data.length >= 255 && data.length < 65536) {
                 oos.write(generateOneLengthArray((byte) 255));
                 byte[] lengthArray = Serializer.serialize((short) data.length);
                 oos.write(lengthArray);
@@ -322,6 +354,23 @@ public class CommunicationModule {
                 oos.write(zeroArray);
                 byte[] lengthArray = Serializer.serialize(data.length);
                 oos.write(lengthArray);
+            }
+            oos.write(data);
+        }
+    }
+
+    public static void writeByteArrayToStream2(ObjectOutputStream oos, byte[] data) throws IOException {
+        if (data.length > 0) {
+            if (data.length < 256) {
+                oos.write(Serializer.serializeNumber(data.length, 1));
+            } else {
+                oos.write(Serializer.serializeNumber(0, 1));
+                if (data.length < 65536) {
+                    oos.write(Serializer.serializeNumber(data.length, 2));
+                } else {
+                    oos.write(Serializer.serializeNumber(0, 2));
+                    oos.write(Serializer.serializeNumber(data.length, 4));
+                }
             }
             oos.write(data);
         }

@@ -36,7 +36,6 @@ class MessageReaderImpl implements MessageReader {
             // the own commModule will return a StopReadingMessages object, if finished
 
             // transform it into a ByteArrayWrapperChannel object, which is what the rest of classes need
-            // todo use util Serializer API
             if (o instanceof ByteArrayWrapper) {
                 // byte[] received
                 ByteArrayWrapper byteArrayWrapper = (ByteArrayWrapper) o;

@@ -54,21 +54,13 @@ public class ServerModule {
      *
      * @param port               port where the server will be listening to new connections
      * @param serverAction       actions to carry out by the ServerModule upon different events
-     * @param concurrentChannels sets of concurrent channels to establish for new client connections (null to indicate
-     *                           that all channels are used by a single thread
+     * @param concurrentChannels sets of concurrent channels to establish for new client connections
      */
     public ServerModule(int port, ServerAction serverAction, Set<Set<Byte>> concurrentChannels) {
         // the concurrent channels are copied, so the given parameter does not affect us in the future
         this.connectedClients = new ConnectedClients();
         this.serverAction = serverAction;
-        if (concurrentChannels != null) {
-            this.concurrentChannels = new HashSet<Set<Byte>>(concurrentChannels.size());
-            for (Set<Byte> channelSet : concurrentChannels) {
-                this.concurrentChannels.add(new HashSet<Byte>(channelSet));
-            }
-        } else {
-            this.concurrentChannels = null;
-        }
+        this.concurrentChannels = concurrentChannels;
         tcpServer = new TCPServer(port, new TCPServerActionImpl(this));
     }
 
@@ -164,7 +156,7 @@ public class ServerModule {
      * @param clientID ID of the client to send the message
      * @param channel  channel for sending the message
      * @param message  the message to send
-     * @throws java.io.IOException       exception raised when sending the message
+     * @throws java.io.IOException exception raised when sending the message
      */
     public void write(UniqueIdentifier clientID, byte channel, Object message) throws IOException {
         ChannelConnectionPoint ccp = connectedClients.getCCP(clientID);
@@ -179,7 +171,7 @@ public class ServerModule {
      * @param clientID ID of the client to send the message
      * @param channel  channel for sending the message
      * @param data     the data to send
-     * @throws java.io.IOException       exception raised when sending the message
+     * @throws java.io.IOException exception raised when sending the message
      */
     public void write(UniqueIdentifier clientID, byte channel, byte[] data) throws IOException {
         ChannelConnectionPoint ccp = connectedClients.getCCP(clientID);
@@ -220,7 +212,7 @@ public class ServerModule {
      * @param clientIDs IDs of the clients to send the message
      * @param channel   channel for sending the message
      * @param message   message to send
-     * @throws java.io.IOException       exception raised when sending the message
+     * @throws java.io.IOException exception raised when sending the message
      */
     public void writeAllIn(Set<UniqueIdentifier> clientIDs, byte channel, Object message) throws IOException {
         for (UniqueIdentifier clientID : clientIDs) {
@@ -234,7 +226,7 @@ public class ServerModule {
      * @param clientIDs IDs of the clients to send the message
      * @param channel   channel for sending the message
      * @param data      the data to send
-     * @throws java.io.IOException       exception raised when sending the message
+     * @throws java.io.IOException exception raised when sending the message
      */
     public void writeAllIn(Set<UniqueIdentifier> clientIDs, byte channel, byte[] data) throws IOException {
         for (UniqueIdentifier clientID : clientIDs) {
@@ -248,7 +240,7 @@ public class ServerModule {
      * @param channel      channel for sending the message
      * @param message      message to send
      * @param clientIDsOut the ids of the clients to exclude
-     * @throws java.io.IOException       exception raised when sending the message to some client
+     * @throws java.io.IOException exception raised when sending the message to some client
      */
     public void writeAllBut(byte channel, Object message, UniqueIdentifier... clientIDsOut) throws IOException {
         Set<UniqueIdentifier> clientIDs;
@@ -262,7 +254,7 @@ public class ServerModule {
      * @param channel      channel for sending the message
      * @param data         the data to send
      * @param clientIDsOut the ids of the clients to exclude
-     * @throws java.io.IOException       exception raised when sending the message to some client
+     * @throws java.io.IOException exception raised when sending the message to some client
      */
     public void writeAllBut(byte channel, byte[] data, UniqueIdentifier... clientIDsOut) throws IOException {
         Set<UniqueIdentifier> clientIDs;

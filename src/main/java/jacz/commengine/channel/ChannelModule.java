@@ -355,9 +355,9 @@ public class ChannelModule {
      * @param channel the channel through which the message is to be sent
      * @param message the message to send
      */
-    void write(byte channel, Object message, boolean flush) {
+    long write(byte channel, Object message, boolean flush) {
         // the message is sent as a unique ChannelMessage object
-        commModule.write(new ChannelMessage(channel, message), flush);
+        return commModule.write(new ChannelMessage(channel, message), flush);
     }
 
     /**
@@ -366,15 +366,15 @@ public class ChannelModule {
      * @param channel the channel through which the data is to be sent
      * @param data    the data to send
      */
-    void write(byte channel, byte[] data, boolean flush) {
+    long write(byte channel, byte[] data, boolean flush) {
         // the message is sent as a unique array of bytes, with the channel and the data together
         byte[] channelArray = Serializer.serialize(channel);
         byte[] channelAndData = Serializer.addArrays(channelArray, data);
-        commModule.write(channelAndData, flush);
+        return commModule.write(channelAndData, flush);
     }
 
-    void flush() {
-        commModule.flush();
+    long flush() {
+        return commModule.flush();
     }
 
     /**
@@ -409,9 +409,11 @@ public class ChannelModule {
                 fsm = channelFSMs.get(channel);
             }
         }
-        if (fsm != null && !fsm.newInput(message)) {
-            // detach this GenericFSM
-            detachFSM(fsm, false);
+        if (fsm != null) {
+            if (!fsm.newInput(message)) {
+                // detach this GenericFSM
+                detachFSM(fsm, false);
+            }
         } else {
             // in the absence of any FSM monitoring the channel, simply send this message to the ChannelAction implementation.
             // cannot happen, no message processor will send the message here
