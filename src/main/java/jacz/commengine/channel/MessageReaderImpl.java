@@ -40,7 +40,7 @@ class MessageReaderImpl implements MessageReader {
                 // byte[] received
                 ByteArrayWrapper byteArrayWrapper = (ByteArrayWrapper) o;
                 MutableOffset mutableOffset = new MutableOffset();
-                byte channel = Serializer.deserializeByte(byteArrayWrapper.getData(), mutableOffset);
+                byte channel = Serializer.deserializeByteValue(byteArrayWrapper.getData(), mutableOffset);
                 return new ByteArrayWrapperChannel(channel, Serializer.deserializeRest(((ByteArrayWrapper) o).getData(), mutableOffset));
             } else {
                 // if it is a ChannelMessage object, leave it that way

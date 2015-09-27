@@ -368,8 +368,7 @@ public class ChannelModule {
      */
     long write(byte channel, byte[] data, boolean flush) {
         // the message is sent as a unique array of bytes, with the channel and the data together
-        byte[] channelArray = Serializer.serialize(channel);
-        byte[] channelAndData = Serializer.addArrays(channelArray, data);
+        byte[] channelAndData = Serializer.addArrays(Serializer.serialize(channel), data);
         return commModule.write(channelAndData, flush);
     }
 
@@ -399,13 +398,11 @@ public class ChannelModule {
         // synchronize this section so nobody can register an FSM while this is running -> this allows
         // the final action of an FSM to state that a channel is free
         // in addition, this allows to complete the init of an FSM before it receives any message
-//        List<GenericFSM<?, Object>> fsmList = null;
         GenericFSM<?, Object> fsm = null;
         synchronized (this) {
             if (channelFSMs.containsKey(channel)) {
                 // copy in another list to avoid concurrency exceptions when detaching (in the detach operation we
                 // eliminate the FSM from the FSM list itself)
-//                fsmList = new ArrayList<>(channelFSMs.get(channel));
                 fsm = channelFSMs.get(channel);
             }
         }

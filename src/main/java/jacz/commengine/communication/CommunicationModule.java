@@ -156,47 +156,21 @@ public class CommunicationModule {
     }
 
     public static byte[] readByteArrayFromStream(ObjectInputStream ois) throws IOException {
-        byte[] data;
         byte[] oneLengthArray = new byte[1];
         readBytes(ois, oneLengthArray);
-        int oneArrayValue = oneLengthArray[0];
-        if (oneArrayValue < 0) {
-            oneArrayValue += 256;
-        }
-        if (oneArrayValue < 255) {
-            data = new byte[oneArrayValue];
-        } else { //if (oneArrayValue == 255) {
-            byte[] twoLengthArray = new byte[2];
-            readBytes(ois, twoLengthArray);
-            int length = Serializer.deserializeShort(twoLengthArray, new MutableOffset());
-            if (length < 0) {
-                length += 65536;
-            }
-            if (length > 0) {
-                data = new byte[length];
-            } else {
-                byte[] fourLengthArray = new byte[4];
-                readBytes(ois, fourLengthArray);
-                length = Serializer.deserializeInt(fourLengthArray, new MutableOffset());
-                data = new byte[length];
-            }
-        }
-        readBytes(ois, data);
-        return data;
+        return readByteArrayFromStreamAux(ois, oneLengthArray);
     }
 
-    public static byte[] readByteArrayFromStream2(ObjectInputStream ois) throws IOException {
-        byte[] oneLengthArray = new byte[1];
-        readBytes(ois, oneLengthArray);
-        int length = Serializer.deserializeNumber(oneLengthArray, 1, new MutableOffset()).intValue();
-        if (length == 0) {
+    public static byte[] readByteArrayFromStreamAux(ObjectInputStream ois, byte[] oneLengthArray) throws IOException {
+        int length = Serializer.deserializeByteValue(oneLengthArray, new MutableOffset()) & 0xFF;
+        if (length == 255) {
             byte[] twoLengthArray = new byte[2];
             readBytes(ois, twoLengthArray);
-            length = Serializer.deserializeNumber(oneLengthArray, 2, new MutableOffset()).intValue();
+            length = Serializer.deserializeShortValue(twoLengthArray, new MutableOffset()) & 0xFFFF;
             if (length == 0) {
                 byte[] fourLengthArray = new byte[4];
                 readBytes(ois, fourLengthArray);
-                length = Serializer.deserializeNumber(oneLengthArray, 4, new MutableOffset()).intValue();
+                length = Serializer.deserializeIntValue(fourLengthArray, new MutableOffset());
             }
         }
         byte[] data = new byte[length];
@@ -211,7 +185,7 @@ public class CommunicationModule {
      * @param array where the bytes will be stored
      * @throws IOException problems reading from the stream
      */
-    private static void readBytes(ObjectInputStream ois, byte[] array) throws IOException {
+    static void readBytes(ObjectInputStream ois, byte[] array) throws IOException {
         int bytesRead = 0;
         while (bytesRead < array.length) {
             bytesRead += ois.read(array, bytesRead, array.length - bytesRead);
@@ -276,7 +250,7 @@ public class CommunicationModule {
 
     public synchronized long write(byte[] data, boolean flush) {
         CommError commError = null;
-        long time = 0L;
+        TimeElapsed timeElapsed = new TimeElapsed();
         // the first byte sent indicates that an array of bytes is going to be sent.
         // If the value sent is between 1 and 254, then an array of that size is sent.
         // If the value is 255, then the next two bytes indicate the size of the array (btw 255 and 2^16 - 1)
@@ -284,33 +258,9 @@ public class CommunicationModule {
         // (greater than 2^16 - 1)
         if (connected) {
             try {
-                if (data.length > 0) {
-                    TimeElapsed timeElapsed = new TimeElapsed();
-                    if (data.length <= 254) {
-                        commError = writeOneLengthArray((byte) data.length);
-                    } else if (data.length > 254 && data.length < 65536) {
-                        commError = writeOneLengthArray((byte) 255);
-                        if (commError == null) {
-                            byte[] lengthArray = Serializer.serialize((short) data.length);
-                            oos.write(lengthArray);
-                        }
-                    } else {
-                        commError = writeOneLengthArray((byte) 255);
-                        if (commError == null) {
-                            byte[] zeroArray = Serializer.serialize((short) 0);
-                            oos.write(zeroArray);
-                            byte[] lengthArray = Serializer.serialize(data.length);
-                            oos.write(lengthArray);
-                        }
-                    }
-                    if (commError == null) {
-                        //write(new ByteArrayLength(data.length));
-                        oos.write(data);
-                        if (flush) {
-                            oos.flush();
-                        }
-                    }
-                    time = timeElapsed.measureTime();
+                writeByteArrayToStream(oos, data);
+                if (flush) {
+                    oos.flush();
                 }
             } catch (IOException e) {
                 commError = new CommError(CommError.Type.IO_CHANNEL_FAILED_WRITING, e);
@@ -319,7 +269,7 @@ public class CommunicationModule {
         if (commError != null) {
             notifyError(commError);
         }
-        return time;
+        return timeElapsed.measureTime();
     }
 
     public synchronized long flush() {
@@ -343,43 +293,18 @@ public class CommunicationModule {
     public static void writeByteArrayToStream(ObjectOutputStream oos, byte[] data) throws IOException {
         if (data.length > 0) {
             if (data.length < 255) {
-                oos.write(generateOneLengthArray((byte) data.length));
-            } else if (data.length >= 255 && data.length < 65536) {
-                oos.write(generateOneLengthArray((byte) 255));
-                byte[] lengthArray = Serializer.serialize((short) data.length);
-                oos.write(lengthArray);
+                oos.write(Serializer.serialize((byte) data.length));
             } else {
-                oos.write(generateOneLengthArray((byte) 255));
-                byte[] zeroArray = Serializer.serialize((short) 0);
-                oos.write(zeroArray);
-                byte[] lengthArray = Serializer.serialize(data.length);
-                oos.write(lengthArray);
-            }
-            oos.write(data);
-        }
-    }
-
-    public static void writeByteArrayToStream2(ObjectOutputStream oos, byte[] data) throws IOException {
-        if (data.length > 0) {
-            if (data.length < 256) {
-                oos.write(Serializer.serializeNumber(data.length, 1));
-            } else {
-                oos.write(Serializer.serializeNumber(0, 1));
+                oos.write(Serializer.serialize((byte) 255));
                 if (data.length < 65536) {
-                    oos.write(Serializer.serializeNumber(data.length, 2));
+                    oos.write(Serializer.serialize((short) data.length));
                 } else {
-                    oos.write(Serializer.serializeNumber(0, 2));
-                    oos.write(Serializer.serializeNumber(data.length, 4));
+                    oos.write(Serializer.serialize((short) 0));
+                    oos.write(Serializer.serialize(data.length));
                 }
             }
             oos.write(data);
         }
-    }
-
-    private static byte[] generateOneLengthArray(byte value) {
-        byte[] oneLengthArray = new byte[1];
-        oneLengthArray[0] = value;
-        return oneLengthArray;
     }
 
     /**

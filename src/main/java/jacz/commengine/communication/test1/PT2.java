@@ -3,6 +3,8 @@ package jacz.commengine.communication.test1;
 
 import jacz.util.concurrency.task_executor.ParallelTask;
 
+import java.util.HashMap;
+
 /**
  * Class description
  * <p/>
@@ -23,20 +25,24 @@ public class PT2 implements ParallelTask {
 
         t2.connect(port);
 
-        /*t2.read();
+//        t2.read();
         t2.write("hola t1");
         t2.write((byte) 1, (byte) 2, (byte) 3);
         byte[] ba = new byte[25];
         for (int i = 0; i < ba.length; i++) {
             ba[i] = 5;
         }
-        t2.write(ba);*/
-        t2.write(new NotSerClass());
-        //byte[] ba2 = new byte[700000];
-        //for (int i = 0; i < ba2.length; i++) {
-        //    ba2[i] = 1;
-        //}
-        //t2.write(ba2);
+        t2.write(ba);
+//        t2.write(new NotSerClass());
+        byte[] ba2 = new byte[700000];
+        for (int i = 0; i < ba2.length; i++) {
+            ba2[i] = 1;
+        }
+        t2.write(ba2);
+        t2.write(79000);
+        t2.write(new HashMap<String, String>());
+        t2.write("hierhigoegrzsodirjgodijgdipojxhgdoihj");
+        t2.write((byte) 13);
         //t2.disconnect();
 
         /*try {

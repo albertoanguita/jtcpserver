@@ -1,7 +1,5 @@
 package jacz.commengine.communication;
 
-import jacz.util.io.object_serialization.MutableOffset;
-import jacz.util.io.object_serialization.Serializer;
 import jacz.util.queues.event_processing.MessageReader;
 import jacz.util.queues.event_processing.StopReadingMessages;
 
@@ -28,15 +26,6 @@ class MessageReaderImpl implements MessageReader {
     private ObjectInputStream ois;
 
     /**
-     * Arrays used in the un-serialization process. They are defined here to save time (so we don't have to create
-     * arrays each time a message arrives)
-     */
-    private byte[] oneLengthArray;
-    private byte[] twoLengthArray;
-    private byte[] fourLengthArray;
-
-
-    /**
      * Class constructor
      *
      * @param communicationModule the CommunicationModule for this MessageReaderImpl
@@ -45,10 +34,6 @@ class MessageReaderImpl implements MessageReader {
     MessageReaderImpl(CommunicationModule communicationModule, ObjectInputStream ois) {
         this.communicationModule = communicationModule;
         this.ois = ois;
-        oneLengthArray = new byte[1];
-        twoLengthArray = new byte[2];
-        fourLengthArray = new byte[4];
-
     }
 
     /**
@@ -58,48 +43,20 @@ class MessageReaderImpl implements MessageReader {
      */
     public Object readMessage() {
         try {
+            byte[] oneLengthArray = new byte[1];
             try {
-                readBytes(oneLengthArray);
+                CommunicationModule.readBytes(ois, oneLengthArray);
             } catch (IndexOutOfBoundsException e) {
                 return new StopReadingMessages();
             }
-
             // an object is next
             if (oneLengthArray[0] == 0) {
                 return ois.readObject();
             }
             // an array of bytes is next
             else {
-                int oneArrayValue = oneLengthArray[0];
-                if (oneArrayValue < 0) {
-                    oneArrayValue += 256;
-                }
-                if (oneArrayValue > 0 && oneArrayValue <= 254) {
-                    byte[] data = new byte[oneArrayValue];
-                    readBytes(data);
-                    return new ByteArrayWrapper(data);
-                } else if (oneArrayValue == 255) {
-                    readBytes(twoLengthArray);
-                    int length = Serializer.deserializeShort(twoLengthArray, new MutableOffset());
-                    if (length < 0) {
-                        length += 65536;
-                    }
-                    if (length > 0) {
-                        byte[] data = new byte[length];
-                        readBytes(data);
-                        return new ByteArrayWrapper(data);
-                    } else {
-                        readBytes(fourLengthArray);
-                        length = Serializer.deserializeInt(fourLengthArray, new MutableOffset());
-                        //int length = 16777216 * twoLengthArray[0] + 65536 * twoLengthArray[1] + 256 * twoLengthArray[2] + twoLengthArray[3];
-                        byte[] data = new byte[length];
-                        readBytes(data);
-                        return new ByteArrayWrapper(data);
-                    }
-                } else {
-                    // cannot happen
-                    return new StopReadingMessages();
-                }
+                byte[] data = CommunicationModule.readByteArrayFromStreamAux(ois, oneLengthArray);
+                return new ByteArrayWrapper(data);
             }
         } catch (SocketException e) {
             // connection closed at this communication end -> stop reading messages
@@ -115,40 +72,17 @@ class MessageReaderImpl implements MessageReader {
         } catch (ClassNotFoundException e) {
             // the class for an received object was not found. This is notified with an error and a stop
             communicationModule.notifyError(new CommError(CommError.Type.UNKNOWN_CLASS_RECEIVED, e));
-//            if (communicationModule.requestStopOrErrorFlag()) {
-//                communicationModule.error(new CommError(CommError.Type.UNKNOWN_CLASS_RECEIVED, e));
-//            }
             return new StopReadingMessages();
         } catch (IOException e) {
             // some IOException when reading from the channel. This is notified with an error
             communicationModule.notifyError(new CommError(CommError.Type.IO_CHANNEL_FAILED_READING, e));
-//            if (communicationModule.requestStopOrErrorFlag()) {
-//                communicationModule.error(new CommError(CommError.Type.IO_CHANNEL_FAILED_READING, e));
-//            }
             return new StopReadingMessages();
         }
         // todo we should test other forms of loosing connection, like unplugging the cable, shutting down the router, etc
     }
 
-    /**
-     * Reads a series of bytes from the input stream and stores them in a byte array. The number of bytes read
-     * corresponds to the length of the passed array
-     *
-     * @param array where the bytes will be stored
-     * @throws IOException problems reading from the stream
-     */
-    private void readBytes(byte[] array) throws IOException {
-        int bytesRead = 0;
-        while (bytesRead < array.length) {
-            bytesRead += ois.read(array, bytesRead, array.length - bytesRead);
-        }
-    }
-
     public void stopped() {
+        // the reading process was stopped, inform the comm module
         communicationModule.notifyDisconnected();
-//        // the reading process was stopped, inform the comm module
-//        if (communicationModule.requestStopOrErrorFlag()) {
-//            communicationModule.stopped();
-//        }
     }
 }
