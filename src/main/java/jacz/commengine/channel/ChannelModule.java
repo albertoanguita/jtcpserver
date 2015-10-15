@@ -463,7 +463,7 @@ public class ChannelModule {
      *                                  - Any of the given channels is not supported in this ChannelModule
      *                                  - Two of the given channels belong to different handling threads
      */
-    <T> void registerNewFSM(ChannelFSMAction<T> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
+    <T> UniqueIdentifier registerNewFSM(ChannelFSMAction<T> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
         boolean canRegister;
         synchronized (this) {
             canRegister = !noMoreFSMRegistrationAccepted;
@@ -472,6 +472,9 @@ public class ChannelModule {
             ChannelFSM<T> channelFSM = new ChannelFSM<>(channelFSMAction, channelConnectionPoint);
             GenericFSM<T, Object> genericFSM = new GenericFSM<>(name, channelFSM);
             registerFSM(genericFSM, channel);
+            return genericFSM.getId();
+        } else {
+            return null;
         }
     }
 
@@ -488,7 +491,7 @@ public class ChannelModule {
      *                                  - Any of the given channels is not supported in this ChannelModule
      *                                  - Two of the given channels belong to different handling threads
      */
-    <T> void registerNewFSM(TimedChannelFSMAction<T> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
+    <T> UniqueIdentifier registerNewFSM(TimedChannelFSMAction<T> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
         boolean canRegister;
         synchronized (this) {
             canRegister = !noMoreFSMRegistrationAccepted;
@@ -498,6 +501,9 @@ public class ChannelModule {
             TimedFSM<T, Object> timedFSM = new TimedFSM<>(name, timedChannelFSM, timeoutMillis);
             timedChannelFSM.setGenericFSM(timedFSM);
             registerFSM(timedFSM, channel);
+            return timedFSM.getId();
+        } else {
+            return null;
         }
     }
 

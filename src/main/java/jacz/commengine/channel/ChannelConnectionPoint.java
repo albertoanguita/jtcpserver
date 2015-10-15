@@ -78,19 +78,19 @@ public class ChannelConnectionPoint {
         return channelModule.isChannelRegistered(channel);
     }
 
-    public void registerGenericFSM(ChannelFSMAction<?> channelFSMAction, byte channel) throws IllegalArgumentException {
-        registerGenericFSM(channelFSMAction, "unnamedGenericFSM", channel);
+    public UniqueIdentifier registerGenericFSM(ChannelFSMAction<?> channelFSMAction, byte channel) throws IllegalArgumentException {
+        return registerGenericFSM(channelFSMAction, "unnamedGenericFSM", channel);
     }
 
-    public void registerGenericFSM(ChannelFSMAction<?> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
-        channelModule.registerNewFSM(channelFSMAction, name, channel);
+    public UniqueIdentifier registerGenericFSM(ChannelFSMAction<?> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
+        return channelModule.registerNewFSM(channelFSMAction, name, channel);
     }
 
-    public void registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, byte channel) throws IllegalArgumentException {
-        registerTimedFSM(timedChannelFSMAction, timeoutMillis, "unnamedTimedFSM", channel);
+    public UniqueIdentifier registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, byte channel) throws IllegalArgumentException {
+        return registerTimedFSM(timedChannelFSMAction, timeoutMillis, "unnamedTimedFSM", channel);
     }
 
-    public void registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
-        channelModule.registerNewFSM(timedChannelFSMAction, timeoutMillis, name, channel);
+    public UniqueIdentifier registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
+        return channelModule.registerNewFSM(timedChannelFSMAction, timeoutMillis, name, channel);
     }
 }

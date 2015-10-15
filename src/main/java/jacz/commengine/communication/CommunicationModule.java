@@ -187,8 +187,13 @@ public class CommunicationModule {
      */
     static void readBytes(ObjectInputStream ois, byte[] array) throws IOException {
         int bytesRead = 0;
-        while (bytesRead < array.length) {
-            bytesRead += ois.read(array, bytesRead, array.length - bytesRead);
+        try {
+            while (bytesRead < array.length) {
+                bytesRead += ois.read(array, bytesRead, array.length - bytesRead);
+            }
+        } catch (IndexOutOfBoundsException e) {
+            // we did not get all expected bytes -> generate an IOException to cover this issue
+            throw new IOException(e.getMessage());
         }
     }
 
