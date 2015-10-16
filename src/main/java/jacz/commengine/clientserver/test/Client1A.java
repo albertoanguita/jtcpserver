@@ -7,6 +7,8 @@ import jacz.util.network.IP4Port;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class description
@@ -27,7 +29,14 @@ class Client1A implements ParallelTask {
 
         ClientModule clientModule;
         ChannelActionClient1 channelActionClient1 = new ChannelActionClient1("A");
-        clientModule = new ClientModule(new IP4Port("127.0.0.1", port), channelActionClient1, null);
+        Set<Byte> allChannels = new HashSet<>();
+        for (Byte channel = Byte.MIN_VALUE; channel < Byte.MAX_VALUE; channel++) {
+            allChannels.add(channel);
+        }
+        allChannels.add(Byte.MAX_VALUE);
+        Set<Set<Byte>> concurrentChannels = new HashSet<>();
+        concurrentChannels.add(allChannels);
+        clientModule = new ClientModule(new IP4Port("127.0.0.1", port), channelActionClient1, concurrentChannels);
 
         ChannelConnectionPoint cpp = null;
         try {

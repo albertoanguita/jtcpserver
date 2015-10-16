@@ -29,11 +29,11 @@ public class PT1 implements ParallelTask {
         t1.read();
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        System.out.println("FIN");
+        System.out.println("FIN server");
         //t1.read();
         t1.disconnect();
 

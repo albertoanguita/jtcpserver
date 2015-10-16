@@ -9,7 +9,6 @@ import jacz.util.network.IP4Port;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.Set;
 
 /**

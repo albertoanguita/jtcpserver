@@ -30,7 +30,7 @@ public interface ChannelAction {
      * @param channel channel through which the message arrived
      * @param message object message that arrived at the ChannelModule
      */
-    public void newMessage(ChannelConnectionPoint ccp, byte channel, Object message);
+    void newMessage(ChannelConnectionPoint ccp, byte channel, Object message);
 
     /**
      * This method is invoked when a new byte array message arrives to the channel module
@@ -39,7 +39,7 @@ public interface ChannelAction {
      * @param channel channel through which the message arrived
      * @param data    array of bytes received by the ChannelModule
      */
-    public void newMessage(ChannelConnectionPoint ccp, byte channel, byte[] data);
+    void newMessage(ChannelConnectionPoint ccp, byte channel, byte[] data);
 
     /**
      * Method invoked when an FSM concludes execution and frees some channels. At this invocation it is sure that the
@@ -51,7 +51,7 @@ public interface ChannelAction {
      * @param ccp     ChannelConnectionPoint to which the freed channels are associated to
      * @param channel channel freed
      */
-    public void channelFreed(ChannelConnectionPoint ccp, byte channel);
+    void channelFreed(ChannelConnectionPoint ccp, byte channel);
 
     /**
      * The Channel module has been disconnected due to this end or the other communication end closing the connection
@@ -59,7 +59,7 @@ public interface ChannelAction {
      * @param ccp      ChannelConnectionPoint to which the disconnected session is associated to
      * @param expected true if the disconnection is provoked by an action initiated by our client, false otherwise
      */
-    public void disconnected(ChannelConnectionPoint ccp, boolean expected);
+    void disconnected(ChannelConnectionPoint ccp, boolean expected);
 
     /**
      * An unexpected exception was raised when reading objects from the socket or writing data to the other end.
@@ -68,5 +68,5 @@ public interface ChannelAction {
      * @param ccp ChannelConnectionPoint to which the error session is associated to
      * @param e   raised error
      */
-    public void error(ChannelConnectionPoint ccp, CommError e);
+    void error(ChannelConnectionPoint ccp, CommError e);
 }

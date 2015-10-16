@@ -7,6 +7,7 @@ import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
 import jacz.util.date_time.TimeElapsed;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
@@ -61,7 +62,7 @@ public class Test1 {
         communicationModule = new CommunicationModule(socket);
     }
 
-    public void write(Object message) {
+    public void write(Serializable message) {
         System.out.println(name + " writes '" + message + "'");
         TimeElapsed timeElapsed = new TimeElapsed();
         communicationModule.write(message);
@@ -108,9 +109,9 @@ public class Test1 {
         tfi1.waitForFinalization();
         tfi2.waitForFinalization();
 
-        System.out.println("FIN");
+        System.out.println("FIN main");
 
-        System.exit(0);
+//        System.exit(0);
     }
 
 

@@ -1,29 +1,17 @@
 package jacz.commengine.clientserver.test;
 
 import jacz.commengine.clientserver.server.ServerModule;
-import jacz.util.concurrency.task_executor.ParallelTask;
+import jacz.util.io.IOUtil;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class description
- * <p/>
- * User: Alberto<br>
- * Date: 10-ene-2009<br>
- * Last Modified: 10-ene-2009
+ * Created by Alberto on 16/10/2015.
  */
-class Server1 implements ParallelTask {
+public class ServerForPython {
 
-    private ServerModule serverModule;
-
-    private int port;
-
-    Server1(int port) {
-        this.port = port;
-    }
-
-    public void performTask() {
+    public static void main(String[] args) {
 
 
         ServerActionImpl1 serverActionImpl1 = new ServerActionImpl1();
@@ -35,14 +23,12 @@ class Server1 implements ParallelTask {
         Set<Set<Byte>> concurrentChannels = new HashSet<>();
         concurrentChannels.add(allChannels);
 
-        serverModule = new ServerModule(port, serverActionImpl1, concurrentChannels);
+        ServerModule serverModule = new ServerModule(45000, serverActionImpl1, concurrentChannels);
         serverActionImpl1.setServerModule(serverModule);
 
         serverModule.startListeningConnections();
-    }
 
-    public void stop() {
-        serverModule.stopAndDisconnect();
-        System.out.println("Server stopped");
+        IOUtil.pauseEnter("Press enter...");
+
     }
 }

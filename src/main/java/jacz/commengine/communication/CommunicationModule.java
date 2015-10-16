@@ -53,7 +53,7 @@ public class CommunicationModule {
     /**
      * Output stream for sending messages to the other point
      */
-    private ObjectOutputStream oos;
+    private OutputStream oos;
 
     /**
      * Fixed size array for sending the one-byte overheads in the messages (this attribute is here for performance
@@ -86,8 +86,8 @@ public class CommunicationModule {
     public CommunicationModule(String name, Socket socket) throws IOException {
         this.socket = socket;
         // order of these two gets cannot be modified, or it will not work
-        oos = new ObjectOutputStream(socket.getOutputStream());
-        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+        oos = socket.getOutputStream();
+        InputStream ois = socket.getInputStream();
         messageProcessor = new MessageProcessor(name + "/commMod", new MessageReaderImpl(this, ois));
         this.oos.flush();
         manuallyDisconnected = false;
@@ -155,13 +155,13 @@ public class CommunicationModule {
         return messageProcessor.takeMessage();
     }
 
-    public static byte[] readByteArrayFromStream(ObjectInputStream ois) throws IOException {
+    public static byte[] readByteArrayFromStream(InputStream ois) throws IOException {
         byte[] oneLengthArray = new byte[1];
         readBytes(ois, oneLengthArray);
         return readByteArrayFromStreamAux(ois, oneLengthArray);
     }
 
-    public static byte[] readByteArrayFromStreamAux(ObjectInputStream ois, byte[] oneLengthArray) throws IOException {
+    public static byte[] readByteArrayFromStreamAux(InputStream ois, byte[] oneLengthArray) throws IOException {
         int length = Serializer.deserializeByteValue(oneLengthArray, new MutableOffset()) & 0xFF;
         if (length == 255) {
             byte[] twoLengthArray = new byte[2];
@@ -185,11 +185,17 @@ public class CommunicationModule {
      * @param array where the bytes will be stored
      * @throws IOException problems reading from the stream
      */
-    static void readBytes(ObjectInputStream ois, byte[] array) throws IOException {
+    static void readBytes(InputStream ois, byte[] array) throws IOException {
         int bytesRead = 0;
         try {
             while (bytesRead < array.length) {
-                bytesRead += ois.read(array, bytesRead, array.length - bytesRead);
+                int length = ois.read(array, bytesRead, array.length - bytesRead);
+                if (length < 0) {
+                    // socket closed
+                    throw new IOException();
+                } else {
+                    bytesRead += length;
+                }
             }
         } catch (IndexOutOfBoundsException e) {
             // we did not get all expected bytes -> generate an IOException to cover this issue
@@ -205,11 +211,11 @@ public class CommunicationModule {
      *
      * @param message the object to send
      */
-    public synchronized long write(Object message) {
+    public synchronized long write(Serializable message) {
         return write(message, true);
     }
 
-    public synchronized long write(Object message, boolean flush) {
+    public synchronized long write(Serializable message, boolean flush) {
         CommError commError = null;
         long time = 0L;
         if (connected) {
@@ -218,7 +224,9 @@ public class CommunicationModule {
                 commError = writeOneLengthArray((byte) 0);
                 if (commError == null) {
                     TimeElapsed timeElapsed = new TimeElapsed();
-                    oos.writeObject(message);
+                    byte[] encodedObject = Serializer.serializeObject(message);
+                    byte[] data = Serializer.addArrays(Serializer.serialize(encodedObject.length), encodedObject);
+                    oos.write(data);
                     if (flush) {
                         oos.flush();
                     }
@@ -295,7 +303,7 @@ public class CommunicationModule {
         return time;
     }
 
-    public static void writeByteArrayToStream(ObjectOutputStream oos, byte[] data) throws IOException {
+    public static void writeByteArrayToStream(OutputStream oos, byte[] data) throws IOException {
         if (data.length > 0) {
             if (data.length < 255) {
                 oos.write(Serializer.serialize((byte) data.length));
