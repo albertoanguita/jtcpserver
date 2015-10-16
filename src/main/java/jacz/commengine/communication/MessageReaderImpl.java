@@ -53,7 +53,7 @@ class MessageReaderImpl implements MessageReader {
                 // read those bytes, and decode the object
                 byte[] encodedObject = new byte[objectLength];
                 CommunicationModule.readBytes(ois, encodedObject);
-                return Serializer.deserializeObject(encodedObject, new MutableOffset());
+                return Serializer.deserializeObjectWithoutLengthHeader(encodedObject);
             }
             // an array of bytes is next
             else {
