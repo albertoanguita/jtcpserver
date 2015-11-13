@@ -66,7 +66,7 @@ public class ServerModule {
     /**
      * Starts the server. Clients can now connect to this server
      */
-    public synchronized void startListeningConnections() {
+    public synchronized void startListeningConnections() throws IOException {
         tcpServer.startServer();
     }
 
@@ -94,6 +94,15 @@ public class ServerModule {
      */
     public int getListeningPort() {
         return tcpServer.getPort();
+    }
+
+    /**
+     * Retrieves the actual listening port of this ServerModule (
+     *
+     * @return the listening port of this ServerModule (-1 if the server has not been started)
+     */
+    public int getActualListeningPort() {
+        return tcpServer.getActualPort();
     }
 
     /**

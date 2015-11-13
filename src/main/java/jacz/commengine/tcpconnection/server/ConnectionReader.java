@@ -47,6 +47,15 @@ final class ConnectionReader implements MessageReader {
         }
     }
 
+    /**
+     * Retrieves the port at which connections are accepted through the server socket
+     *
+     * @return port for listening connections
+     */
+    public int getPort() {
+        return serverSocket.getLocalPort();
+    }
+
     public Object readMessage() {
         try {
             return serverSocket.accept();

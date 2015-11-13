@@ -225,7 +225,6 @@ public class CommunicationModule {
                 if (commError == null) {
                     TimeElapsed timeElapsed = new TimeElapsed();
                     byte[] encodedObject = Serializer.serializeObject(message);
-//                    byte[] data = Serializer.addArrays(Serializer.serialize(encodedObject.length), encodedObject);
                     oos.write(encodedObject);
                     if (flush) {
                         oos.flush();

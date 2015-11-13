@@ -82,6 +82,21 @@ public class ClientModule {
     }
 
     /**
+     * Establishes connection to the server, with a specific timeout
+     *
+     * @return the ChannelConnectionPoint object that can be used to write messages to the server
+     * @throws java.io.IOException raised when there were problems connecting the server (for example the server is
+     *                             not available
+     */
+    public synchronized ChannelConnectionPoint connect(int timeout) throws IOException {
+        // we connect to the server and create the ModuloCanal for communication. From it we obtain the
+        // ChannelConnectionPoint to be returned. The ModuloCanal is not started here, must be started separately
+        Socket socket = TCPClient.connect(serverIp4Port.getIp(), serverIp4Port.getPort(), timeout);
+        channelModule = new ChannelModule(socket, channelAction, concurrentChannels);
+        return channelModule.getChannelConnectionPoint();
+    }
+
+    /**
      * Makes the ChannelModule created during the connection process begin processing incoming messages from the server
      */
     public synchronized void start() {

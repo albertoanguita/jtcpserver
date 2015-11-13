@@ -82,27 +82,36 @@ public final class TCPServer {
     }
 
     /**
+     * Retrieves the actual port opened for listening incoming connections
+     *
+     * @return port for listening connections
+     */
+    public int getActualPort() {
+        return isRunning() ? connectionReader.getPort() : -1;
+    }
+
+    /**
      * Starts the server. Connections are accepted from now on. If the server was already running, this method does nothing.
      * <p/>
      * This method might produce an error if the listening socket throws an IOException when opening up. In that case the error method of the
      * tcp server action is invoked.
      */
-    public void startServer() {
-        Exception exceptionDueToError = null;
-        synchronized (this) {
-            try {
-                if (!isRunning()) {
-                    initializeConnectionProcessor(port, tcpServerAction);
-                    connectionProcessor.start();
-                    running = true;
-                }
-            } catch (Exception e) {
-                exceptionDueToError = e;
-            }
+    public synchronized void startServer() throws IOException {
+//        Exception exceptionDueToError = null;
+//        synchronized (this) {
+//            try {
+        if (!isRunning()) {
+            initializeConnectionProcessor(port, tcpServerAction);
+            connectionProcessor.start();
+            running = true;
         }
-        if (exceptionDueToError != null) {
-            tcpServerAction.error(exceptionDueToError);
-        }
+//            } catch (IOException e) {
+//                exceptionDueToError = e;
+//            }
+//        }
+//        if (exceptionDueToError != null) {
+//            tcpServerAction.error(exceptionDueToError);
+//        }
     }
 
     /**
@@ -125,7 +134,7 @@ public final class TCPServer {
      * Restarts the server. The server is stopped if it was running, and then it is started. This method might produce an error while starting
      * the server.
      */
-    public void restartServer() {
+    public void restartServer() throws IOException {
         stopServer();
         startServer();
     }
