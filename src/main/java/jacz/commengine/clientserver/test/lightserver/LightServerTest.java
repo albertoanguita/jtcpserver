@@ -5,12 +5,14 @@ import jacz.commengine.clientserver.server.LightServer;
 import jacz.util.concurrency.ThreadUtil;
 import jacz.util.network.IP4Port;
 
+import java.io.IOException;
+
 /**
  * test
  */
 public class LightServerTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         LightServer lightServer = new LightServer(55555, new LightServerActionObjectImpl(), true);
         lightServer.start();

@@ -3,6 +3,8 @@ package jacz.commengine.tcpconnection.test;
 import jacz.commengine.tcpconnection.server.TCPServer;
 import jacz.util.concurrency.task_executor.ParallelTask;
 
+import java.io.IOException;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Alberto
@@ -23,7 +25,11 @@ public class Server implements ParallelTask {
     public void performTask() {
         //TCPServer tcpServer = new TCPServer(port, new ServerAction());
         tcpServer = new TCPServer(port, new ServerAction());
-        tcpServer.startServer();
+        try {
+            tcpServer.startServer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Server started");
     }
 

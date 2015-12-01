@@ -85,7 +85,7 @@ public class LightServer implements TCPServerAction {
     /**
      * Starts the server. Clients can now connect to this server
      */
-    public void start() {
+    public void start() throws IOException {
         tcpServer.startServer();
     }
 

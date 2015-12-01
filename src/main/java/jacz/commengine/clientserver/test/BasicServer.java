@@ -4,6 +4,7 @@ import jacz.commengine.clientserver.server.LightServer;
 import jacz.commengine.clientserver.server.LightServerActionObject;
 import jacz.util.concurrency.ThreadUtil;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
 
@@ -15,7 +16,7 @@ import java.net.Socket;
 public class BasicServer implements LightServerActionObject {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         int port = 64905;
         long seconds = 30;
         LightServer lightServer = new LightServer(port, new BasicServer(), true);

@@ -3,6 +3,7 @@ package jacz.commengine.clientserver.test;
 import jacz.commengine.clientserver.server.ServerModule;
 import jacz.util.concurrency.task_executor.ParallelTask;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +39,11 @@ class Server1 implements ParallelTask {
         serverModule = new ServerModule(port, serverActionImpl1, concurrentChannels);
         serverActionImpl1.setServerModule(serverModule);
 
-        serverModule.startListeningConnections();
+        try {
+            serverModule.startListeningConnections();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void stop() {

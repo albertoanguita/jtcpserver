@@ -3,6 +3,7 @@ package jacz.commengine.clientserver.test;
 import jacz.commengine.clientserver.server.ServerModule;
 import jacz.util.io.IOUtil;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import java.util.Set;
  */
 public class ServerForPython {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
 
         ServerActionImpl1 serverActionImpl1 = new ServerActionImpl1();
