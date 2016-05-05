@@ -3,8 +3,7 @@ package jacz.commengine.clientserver.server;
 import jacz.commengine.communication.CommunicationModule;
 import jacz.commengine.tcpconnection.server.TCPServer;
 import jacz.commengine.tcpconnection.server.TCPServerAction;
-import jacz.util.concurrency.task_executor.ParallelTask;
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -33,7 +32,7 @@ public class LightServer implements TCPServerAction {
         }
     }
 
-    private static class ParallelRequestAttender implements ParallelTask {
+    private static class ParallelRequestAttender implements Runnable {
 
         private final Socket clientSocket;
 
@@ -51,7 +50,7 @@ public class LightServer implements TCPServerAction {
         }
 
         @Override
-        public void performTask() {
+        public void run() {
             LightServer.attendRequest(clientSocket, lightServerActionObject, lightServerActionByteArray, isObjectRequest);
         }
     }
@@ -86,6 +85,7 @@ public class LightServer implements TCPServerAction {
      * Starts the server. Clients can now connect to this server
      */
     public void start() throws IOException {
+        ThreadExecutor.registerClient(this.getClass().getName());
         tcpServer.startServer();
     }
 
@@ -95,6 +95,7 @@ public class LightServer implements TCPServerAction {
      */
     public void stop() {
         tcpServer.stopServer();
+        ThreadExecutor.shutdownClient(this.getClass().getName());
     }
 
 
@@ -103,7 +104,7 @@ public class LightServer implements TCPServerAction {
         if (!parallelRequests) {
             attendRequest(clientSocket, lightServerActionObject, lightServerActionByteArray, isObjectRequest);
         } else {
-            ParallelTaskExecutor.executeTask(new ParallelRequestAttender(clientSocket, lightServerActionObject, lightServerActionByteArray, isObjectRequest), "LightServer");
+            ThreadExecutor.submit(new ParallelRequestAttender(clientSocket, lightServerActionObject, lightServerActionByteArray, isObjectRequest), "LightServer");
         }
     }
 

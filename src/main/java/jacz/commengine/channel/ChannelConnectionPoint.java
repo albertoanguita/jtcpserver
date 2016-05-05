@@ -1,7 +1,8 @@
 package jacz.commengine.channel;
 
-import jacz.util.identifier.UniqueIdentifier;
-import jacz.util.identifier.UniqueIdentifierFactory;
+import jacz.util.id.AlphaNumFactory;
+
+import java.io.Serializable;
 
 /**
  * This class offers simplified access to a ChannelModule. It is always associated to a ChannelModule, and offers
@@ -11,14 +12,14 @@ public class ChannelConnectionPoint {
 
     private final ChannelModule channelModule;
 
-    private final UniqueIdentifier id;
+    private final String id;
 
     public ChannelConnectionPoint(ChannelModule channelModule) {
         this.channelModule = channelModule;
-        id = UniqueIdentifierFactory.getOneStaticIdentifier();
+        id = AlphaNumFactory.getStaticId();
     }
 
-    public ChannelConnectionPoint(ChannelModule channelModule, UniqueIdentifier id) {
+    public ChannelConnectionPoint(ChannelModule channelModule, String id) {
         this.channelModule = channelModule;
         this.id = id;
     }
@@ -27,7 +28,7 @@ public class ChannelConnectionPoint {
         return channelModule;
     }
 
-    public UniqueIdentifier getId() {
+    public String getId() {
         return id;
     }
 
@@ -44,11 +45,11 @@ public class ChannelConnectionPoint {
         return id.hashCode();
     }
 
-    public long write(byte channel, Object message) {
+    public long write(byte channel, Serializable message) {
         return write(channel, message, true);
     }
 
-    public long write(byte channel, Object message, boolean flush) {
+    public long write(byte channel, Serializable message, boolean flush) {
         return channelModule.write(channel, message, flush);
     }
 
@@ -78,19 +79,19 @@ public class ChannelConnectionPoint {
         return channelModule.isChannelRegistered(channel);
     }
 
-    public UniqueIdentifier registerGenericFSM(ChannelFSMAction<?> channelFSMAction, byte channel) throws IllegalArgumentException {
+    public String registerGenericFSM(ChannelFSMAction<?> channelFSMAction, byte channel) throws IllegalArgumentException {
         return registerGenericFSM(channelFSMAction, "unnamedGenericFSM", channel);
     }
 
-    public UniqueIdentifier registerGenericFSM(ChannelFSMAction<?> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
+    public String registerGenericFSM(ChannelFSMAction<?> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
         return channelModule.registerNewFSM(channelFSMAction, name, channel);
     }
 
-    public UniqueIdentifier registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, byte channel) throws IllegalArgumentException {
+    public String registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, byte channel) throws IllegalArgumentException {
         return registerTimedFSM(timedChannelFSMAction, timeoutMillis, "unnamedTimedFSM", channel);
     }
 
-    public UniqueIdentifier registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
+    public String registerTimedFSM(TimedChannelFSMAction<?> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
         return channelModule.registerNewFSM(timedChannelFSMAction, timeoutMillis, name, channel);
     }
 }

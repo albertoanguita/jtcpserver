@@ -2,7 +2,6 @@ package jacz.commengine.channel.tests.test2;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
-import jacz.util.concurrency.task_executor.ParallelTask;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -17,7 +16,7 @@ import java.util.Set;
  * Time: 12:57:57
  * To change this template use File | Settings | File Templates.
  */
-public class Client implements ParallelTask {
+public class Client implements Runnable {
 
     private int port;
 
@@ -31,7 +30,7 @@ public class Client implements ParallelTask {
         this.port = port;
     }
 
-    public void performTask() {
+    public void run() {
         // open a server and wait for a client to start
         try {
             Socket socket = new Socket("127.0.0.1", port);

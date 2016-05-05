@@ -2,7 +2,6 @@ package jacz.commengine.clientserver.server;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.communication.CommError;
-import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.network.IP4Port;
 
 /**
@@ -36,7 +35,7 @@ public interface ServerAction {
      * @param ccp      cpp of this client (we can use it to bypass the server module for communicating with the client)
      * @param ip4Port  connection details of the new client (ip and port)
      */
-    public void newClientConnection(UniqueIdentifier clientID, ChannelConnectionPoint ccp, IP4Port ip4Port);
+    void newClientConnection(String clientID, ChannelConnectionPoint ccp, IP4Port ip4Port);
 
     /**
      * Method invoked when a new object message arrives from a connected client
@@ -46,7 +45,7 @@ public interface ServerAction {
      * @param channel  channel through which the message arrives
      * @param message  the object message
      */
-    public void newMessage(UniqueIdentifier clientID, ChannelConnectionPoint ccp, byte channel, Object message);
+    void newMessage(String clientID, ChannelConnectionPoint ccp, byte channel, Object message);
 
     /**
      * Method invoked when a new byte array message arrives from a connected client
@@ -56,7 +55,7 @@ public interface ServerAction {
      * @param channel  channel through which the message arrives
      * @param data     the byte array message
      */
-    public void newMessage(UniqueIdentifier clientID, ChannelConnectionPoint ccp, byte channel, byte[] data);
+    void newMessage(String clientID, ChannelConnectionPoint ccp, byte channel, byte[] data);
 
     /**
      * Method invoked when a set of concurrent channels if freed (no FSMs monitor then any more). During this method
@@ -66,7 +65,7 @@ public interface ServerAction {
      * @param ccp      ChannelConnectionPoint object which frees the channels
      * @param channel  channel freed
      */
-    public void channelFreed(UniqueIdentifier clientID, ChannelConnectionPoint ccp, byte channel);
+    void channelFreed(String clientID, ChannelConnectionPoint ccp, byte channel);
 
     /**
      * Method invoked when a client disconnects from the server
@@ -75,7 +74,7 @@ public interface ServerAction {
      * @param ccp      ChannelConnectionPoint object for the disconnected client
      * @param expected true if the disconnection is provoked by an action initiated by our client, false otherwise
      */
-    public void clientDisconnected(UniqueIdentifier clientID, ChannelConnectionPoint ccp, boolean expected);
+    void clientDisconnected(String clientID, ChannelConnectionPoint ccp, boolean expected);
 
     /**
      * An unexpected exception was raised when reading objects from the socket of a client. This client was disconnected
@@ -84,7 +83,7 @@ public interface ServerAction {
      * @param ccp      ChannelConnectionPoint object which raised the error
      * @param e        raised exception
      */
-    public void clientError(UniqueIdentifier clientID, ChannelConnectionPoint ccp, CommError e);
+    void clientError(String clientID, ChannelConnectionPoint ccp, CommError e);
 
     /**
      * Error listening to a new connection. This new connection was ignored, server keeps running. It is basically
@@ -93,7 +92,7 @@ public interface ServerAction {
      * @param e       exception raised
      * @param ip4Port IP address and port of the client whose connection failed
      */
-    public void newConnectionError(Exception e, IP4Port ip4Port);
+    void newConnectionError(Exception e, IP4Port ip4Port);
 
     /**
      * Error in the connection server. The connection server had to be closed due to IO problems opening the tcp server and could not be restarted.
@@ -101,5 +100,5 @@ public interface ServerAction {
      *
      * @param e exception that caused the error
      */
-    public void TCPServerError(Exception e);
+    void TCPServerError(Exception e);
 }

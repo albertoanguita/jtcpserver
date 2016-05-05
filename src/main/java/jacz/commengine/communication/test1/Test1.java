@@ -2,8 +2,7 @@ package jacz.commengine.communication.test1;
 
 import jacz.commengine.communication.ByteArrayWrapper;
 import jacz.commengine.communication.CommunicationModule;
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
-import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
 import jacz.util.date_time.TimeElapsed;
 
 import java.io.IOException;
@@ -11,6 +10,8 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Class description
@@ -98,18 +99,20 @@ public class Test1 {
     }
 
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ExecutionException, InterruptedException {
 
         final int port = 50000;
 
 
-        TaskFinalizationIndicator tfi1 = ParallelTaskExecutor.executeTask(new PT1(port));
-        TaskFinalizationIndicator tfi2 = ParallelTaskExecutor.executeTask(new PT2(port));
+        ThreadExecutor.registerClient(Test1.class.getName());
+        Future future1 = ThreadExecutor.submit(new PT1(port));
+        Future future2 = ThreadExecutor.submit(new PT2(port));
 
-        tfi1.waitForFinalization();
-        tfi2.waitForFinalization();
+        future1.get();
+        future2.get();
 
         System.out.println("FIN main");
+        ThreadExecutor.shutdownClient(Test1.class.getName());
 
 //        System.exit(0);
     }

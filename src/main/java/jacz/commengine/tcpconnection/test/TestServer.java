@@ -1,8 +1,9 @@
 package jacz.commengine.tcpconnection.test;
 
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
-import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
 import jacz.util.io.IOUtil;
+
+import java.util.concurrent.Future;
 
 /**
  * test
@@ -15,12 +16,18 @@ public class TestServer {
         final int port = 50000;
 
         Server server = new Server(port);
-        TaskFinalizationIndicator tfi1 = ParallelTaskExecutor.executeTask(server);
+        ThreadExecutor.registerClient(TestServer.class.getName());
+        Future future = ThreadExecutor.submit(server);
 
-        tfi1.waitForFinalization();
+        try {
+            future.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         IOUtil.pauseEnter("press enter");
         server.stop();
 
         System.out.println("FIN");
+        ThreadExecutor.shutdownClient(TestServer.class.getName());
     }
 }

@@ -1,7 +1,6 @@
 package jacz.commengine.clientserver.test;
 
 import jacz.commengine.clientserver.server.ServerModule;
-import jacz.util.concurrency.task_executor.ParallelTask;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -14,7 +13,7 @@ import java.util.Set;
  * Date: 10-ene-2009<br>
  * Last Modified: 10-ene-2009
  */
-class Server1 implements ParallelTask {
+class Server1 implements Runnable {
 
     private ServerModule serverModule;
 
@@ -24,7 +23,7 @@ class Server1 implements ParallelTask {
         this.port = port;
     }
 
-    public void performTask() {
+    public void run() {
 
 
         ServerActionImpl1 serverActionImpl1 = new ServerActionImpl1();

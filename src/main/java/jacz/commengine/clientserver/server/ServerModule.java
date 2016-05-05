@@ -4,10 +4,10 @@ import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
 import jacz.commengine.communication.CommError;
 import jacz.commengine.tcpconnection.server.TCPServer;
-import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.network.IP4Port;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.Set;
 
@@ -120,7 +120,7 @@ public class ServerModule {
      * @param clientID id of the client
      * @return the channel connection point object corresponding to the given client
      */
-    public ChannelConnectionPoint getCCP(UniqueIdentifier clientID) {
+    public ChannelConnectionPoint getCCP(String clientID) {
         return connectedClients.getCCP(clientID);
     }
 
@@ -130,7 +130,7 @@ public class ServerModule {
      * @param clientID id of the client
      * @return the IP4Port object corresponding to the given client
      */
-    public IP4Port getIP4Port(UniqueIdentifier clientID) {
+    public IP4Port getIP4Port(String clientID) {
         return connectedClients.getClientIP4Port(clientID);
     }
 
@@ -139,7 +139,7 @@ public class ServerModule {
      *
      * @param clientID the ID of the client to disconnect.
      */
-    public void disconnectClient(UniqueIdentifier clientID) {
+    public void disconnectClient(String clientID) {
         ChannelConnectionPoint ccp = connectedClients.getCCP(clientID);
         if (ccp != null) {
             ccp.disconnect();
@@ -150,9 +150,9 @@ public class ServerModule {
      * Disconnects all connected clients. This method can be invoked with the server running or stopped
      */
     public void disconnectAllClients() {
-        Set<UniqueIdentifier> clientIDs;
+        Set<String> clientIDs;
         clientIDs = connectedClients.getClientIDs();
-        for (UniqueIdentifier clientID : clientIDs) {
+        for (String clientID : clientIDs) {
             disconnectClient(clientID);
         }
     }
@@ -166,7 +166,7 @@ public class ServerModule {
      * @param message  the message to send
      * @throws java.io.IOException exception raised when sending the message
      */
-    public void write(UniqueIdentifier clientID, byte channel, Object message) throws IOException {
+    public void write(String clientID, byte channel, Serializable message) throws IOException {
         ChannelConnectionPoint ccp = connectedClients.getCCP(clientID);
         if (ccp != null) {
             ccp.write(channel, message);
@@ -181,7 +181,7 @@ public class ServerModule {
      * @param data     the data to send
      * @throws java.io.IOException exception raised when sending the message
      */
-    public void write(UniqueIdentifier clientID, byte channel, byte[] data) throws IOException {
+    public void write(String clientID, byte channel, byte[] data) throws IOException {
         ChannelConnectionPoint ccp = connectedClients.getCCP(clientID);
         if (ccp != null) {
             ccp.write(channel, data);
@@ -195,8 +195,8 @@ public class ServerModule {
      * @param message the message to send
      * @throws java.io.IOException exception raised when sending the message
      */
-    public void writeAll(byte channel, Object message) throws IOException {
-        Set<UniqueIdentifier> clientIDs;
+    public void writeAll(byte channel, Serializable message) throws IOException {
+        Set<String> clientIDs;
         clientIDs = connectedClients.getClientIDs();
         writeAllIn(clientIDs, channel, message);
     }
@@ -209,7 +209,7 @@ public class ServerModule {
      * @throws java.io.IOException exception raised when sending the message
      */
     public void writeAll(byte channel, byte[] data) throws IOException {
-        Set<UniqueIdentifier> clientIDs;
+        Set<String> clientIDs;
         clientIDs = connectedClients.getClientIDs();
         writeAllIn(clientIDs, channel, data);
     }
@@ -222,8 +222,8 @@ public class ServerModule {
      * @param message   message to send
      * @throws java.io.IOException exception raised when sending the message
      */
-    public void writeAllIn(Set<UniqueIdentifier> clientIDs, byte channel, Object message) throws IOException {
-        for (UniqueIdentifier clientID : clientIDs) {
+    public void writeAllIn(Set<String> clientIDs, byte channel, Serializable message) throws IOException {
+        for (String clientID : clientIDs) {
             write(clientID, channel, message);
         }
     }
@@ -236,8 +236,8 @@ public class ServerModule {
      * @param data      the data to send
      * @throws java.io.IOException exception raised when sending the message
      */
-    public void writeAllIn(Set<UniqueIdentifier> clientIDs, byte channel, byte[] data) throws IOException {
-        for (UniqueIdentifier clientID : clientIDs) {
+    public void writeAllIn(Set<String> clientIDs, byte channel, byte[] data) throws IOException {
+        for (String clientID : clientIDs) {
             write(clientID, channel, data);
         }
     }
@@ -250,8 +250,8 @@ public class ServerModule {
      * @param clientIDsOut the ids of the clients to exclude
      * @throws java.io.IOException exception raised when sending the message to some client
      */
-    public void writeAllBut(byte channel, Object message, UniqueIdentifier... clientIDsOut) throws IOException {
-        Set<UniqueIdentifier> clientIDs;
+    public void writeAllBut(byte channel, Serializable message, String... clientIDsOut) throws IOException {
+        Set<String> clientIDs;
         clientIDs = connectedClients.getClientIDsExcept(clientIDsOut);
         writeAllIn(clientIDs, channel, message);
     }
@@ -264,8 +264,8 @@ public class ServerModule {
      * @param clientIDsOut the ids of the clients to exclude
      * @throws java.io.IOException exception raised when sending the message to some client
      */
-    public void writeAllBut(byte channel, byte[] data, UniqueIdentifier... clientIDsOut) throws IOException {
-        Set<UniqueIdentifier> clientIDs;
+    public void writeAllBut(byte channel, byte[] data, String... clientIDsOut) throws IOException {
+        Set<String> clientIDs;
         clientIDs = connectedClients.getClientIDsExcept(clientIDsOut);
         writeAllIn(clientIDs, channel, data);
     }
@@ -345,7 +345,7 @@ public class ServerModule {
      *
      * @param clientID the id of the client to remove
      */
-    private void removeClient(UniqueIdentifier clientID) {
+    private void removeClient(String clientID) {
         connectedClients.removeClient(clientID);
     }
 }

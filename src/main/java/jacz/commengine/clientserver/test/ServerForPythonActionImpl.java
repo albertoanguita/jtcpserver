@@ -3,7 +3,6 @@ package jacz.commengine.clientserver.test;
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.clientserver.server.ServerAction;
 import jacz.commengine.communication.CommError;
-import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.network.IP4Port;
 
 import java.util.Arrays;
@@ -14,17 +13,17 @@ import java.util.Arrays;
 public class ServerForPythonActionImpl implements ServerAction {
 
     @Override
-    public void newClientConnection(UniqueIdentifier clientID, ChannelConnectionPoint ccp, IP4Port ip4Port) {
+    public void newClientConnection(String clientID, ChannelConnectionPoint ccp, IP4Port ip4Port) {
         System.out.println("New client connected: " + clientID);
     }
 
     @Override
-    public void newMessage(UniqueIdentifier clientID, ChannelConnectionPoint ccp, byte channel, Object message) {
+    public void newMessage(String clientID, ChannelConnectionPoint ccp, byte channel, Object message) {
         System.out.println("New object message!!!: " + message);
     }
 
     @Override
-    public void newMessage(UniqueIdentifier clientID, ChannelConnectionPoint ccp, byte channel, byte[] data) {
+    public void newMessage(String clientID, ChannelConnectionPoint ccp, byte channel, byte[] data) {
         System.out.println("New byte message: " + Arrays.toString(data));
         byte[] response = new byte[data.length];
         for (int i = 0; i < data.length; i++) {
@@ -35,17 +34,17 @@ public class ServerForPythonActionImpl implements ServerAction {
     }
 
     @Override
-    public void channelFreed(UniqueIdentifier clientID, ChannelConnectionPoint ccp, byte channel) {
+    public void channelFreed(String clientID, ChannelConnectionPoint ccp, byte channel) {
         System.out.println("Channel freed");
     }
 
     @Override
-    public void clientDisconnected(UniqueIdentifier clientID, ChannelConnectionPoint ccp, boolean expected) {
+    public void clientDisconnected(String clientID, ChannelConnectionPoint ccp, boolean expected) {
         System.out.println("Client disconnected: " + clientID);
     }
 
     @Override
-    public void clientError(UniqueIdentifier clientID, ChannelConnectionPoint ccp, CommError e) {
+    public void clientError(String clientID, ChannelConnectionPoint ccp, CommError e) {
         System.out.println("Client error: " + clientID);
     }
 

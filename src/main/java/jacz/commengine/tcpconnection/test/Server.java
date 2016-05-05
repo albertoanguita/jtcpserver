@@ -1,7 +1,6 @@
 package jacz.commengine.tcpconnection.test;
 
 import jacz.commengine.tcpconnection.server.TCPServer;
-import jacz.util.concurrency.task_executor.ParallelTask;
 
 import java.io.IOException;
 
@@ -12,7 +11,7 @@ import java.io.IOException;
  * Time: 17:46:01
  * To change this template use File | Settings | File Templates.
  */
-public class Server implements ParallelTask {
+public class Server implements Runnable {
 
     private int port;
 
@@ -22,7 +21,7 @@ public class Server implements ParallelTask {
         this.port = port;
     }
 
-    public void performTask() {
+    public void run() {
         //TCPServer tcpServer = new TCPServer(port, new ServerAction());
         tcpServer = new TCPServer(port, new ServerAction());
         try {

@@ -1,7 +1,9 @@
 package jacz.commengine.clientserver.test;
 
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
-import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
@@ -9,18 +11,19 @@ import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
  */
 public class Test1 {
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ExecutionException, InterruptedException {
 
+        ThreadExecutor.registerClient(Test1.class.getName());
         final int port = 50000;
 
         Server1 s = new Server1(port);
-        TaskFinalizationIndicator tfi1 = ParallelTaskExecutor.executeTask(s);
-        TaskFinalizationIndicator tfi2 = ParallelTaskExecutor.executeTask(new Client1A(port));
-        TaskFinalizationIndicator tfi3 = ParallelTaskExecutor.executeTask(new Client1B(port));
+        Future future1 = ThreadExecutor.submit(s);
+        Future future2 = ThreadExecutor.submit(new Client1A(port));
+        Future future3 = ThreadExecutor.submit(new Client1B(port));
 
-        tfi1.waitForFinalization();
-        tfi2.waitForFinalization();
-        tfi3.waitForFinalization();
+        future1.get();
+        future2.get();
+        future3.get();
 
 
 
@@ -34,5 +37,6 @@ public class Test1 {
         s.stop();
 
         System.out.println("FINN");
+        ThreadExecutor.shutdownClient(Test1.class.getName());
     }
 }

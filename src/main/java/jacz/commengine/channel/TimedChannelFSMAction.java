@@ -21,5 +21,5 @@ public interface TimedChannelFSMAction<T> extends ChannelFSMAction<T> {
      * @param state the current state of the FSM
      * @param ccp   ChannelConnectionPoint to which this FSM is attached to
      */
-    public void timedOut(T state, ChannelConnectionPoint ccp);
+    void timedOut(T state, ChannelConnectionPoint ccp);
 }

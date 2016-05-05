@@ -1,10 +1,6 @@
 package jacz.commengine.communication.test1;
 
 
-import jacz.util.concurrency.task_executor.ParallelTask;
-
-import java.util.HashMap;
-
 /**
  * Class description
  * <p/>
@@ -12,7 +8,7 @@ import java.util.HashMap;
  * Date: 16-dic-2008<br>
  * Last Modified: 16-dic-2008
  */
-public class PT2 implements ParallelTask {
+public class PT2 implements Runnable {
 
     private int port;
 
@@ -20,7 +16,7 @@ public class PT2 implements ParallelTask {
         this.port = port;
     }
 
-    public void performTask() {
+    public void run() {
         Test1 t2 = new Test1("t2");
 
         t2.connect(port);

@@ -1,7 +1,7 @@
 package jacz.commengine.communication;
 
-import jacz.util.io.object_serialization.MutableOffset;
-import jacz.util.io.object_serialization.Serializer;
+import jacz.util.io.serialization.MutableOffset;
+import jacz.util.io.serialization.Serializer;
 import jacz.util.queues.event_processing.MessageReader;
 import jacz.util.queues.event_processing.StopReadingMessages;
 

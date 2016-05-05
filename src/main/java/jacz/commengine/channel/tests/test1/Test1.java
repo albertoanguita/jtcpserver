@@ -2,14 +2,16 @@ package jacz.commengine.channel.tests.test1;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
-import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Class description
@@ -76,7 +78,7 @@ public class Test1 {
         channelModule.start();
     }
 
-    public void write(byte canal, Object message) {
+    public void write(byte canal, Serializable message) {
         System.out.println(name + " writes '" + message + "' through jacz.commengine.channel " + canal);
         channelConnectionPoint.write(canal, message);
     }
@@ -104,19 +106,20 @@ public class Test1 {
     }*/
 
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ExecutionException, InterruptedException {
 
+        ThreadExecutor.registerClient(Test1.class.getName());
         final int port = 50000;
 
 
-        TaskFinalizationIndicator tfi1 = ParallelTaskExecutor.executeTask(new PT1(port));
-        TaskFinalizationIndicator tfi2 = ParallelTaskExecutor.executeTask(new PT2(port));
+        Future future1 = ThreadExecutor.submit(new PT1(port));
+        Future future2 = ThreadExecutor.submit(new PT2(port));
 
-        tfi1.waitForFinalization();
-        tfi2.waitForFinalization();
+        future1.get();
+        future2.get();
 
         System.out.println("FIN");
-
+        ThreadExecutor.shutdownClient(Test1.class.getName());
     }
 
 

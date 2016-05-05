@@ -1,8 +1,8 @@
 package jacz.commengine.clientserver.test.lightserver;
 
 import jacz.commengine.clientserver.server.LightServerActionByteArray;
-import jacz.util.io.object_serialization.MutableOffset;
-import jacz.util.io.object_serialization.Serializer;
+import jacz.util.io.serialization.MutableOffset;
+import jacz.util.io.serialization.Serializer;
 
 import java.net.Socket;
 

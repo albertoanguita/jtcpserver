@@ -1,10 +1,10 @@
 package jacz.commengine.tcpconnection.test;
 
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
-import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
 import jacz.util.io.IOUtil;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 /**
  *
@@ -18,9 +18,14 @@ public class TestClient {
 
         Client client = new Client("127.0.0.1", port);
 
-        TaskFinalizationIndicator tfi2 = ParallelTaskExecutor.executeTask(client);
+        ThreadExecutor.registerClient(TestClient.class.getName());
+        Future future = ThreadExecutor.submit(client);
 
-        tfi2.waitForFinalization();
+        try {
+            future.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         IOUtil.pauseEnter("press enter");
         try {
             client.socket.close();
@@ -29,6 +34,7 @@ public class TestClient {
         }
 
         System.out.println("FIN");
+        ThreadExecutor.shutdownClient(TestClient.class.getName());
 
     }
 }

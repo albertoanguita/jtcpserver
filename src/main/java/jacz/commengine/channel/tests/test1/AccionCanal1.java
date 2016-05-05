@@ -4,6 +4,7 @@ import jacz.commengine.channel.ChannelAction;
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.communication.CommError;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 

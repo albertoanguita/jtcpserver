@@ -2,20 +2,24 @@ package jacz.commengine.channel;
 
 import jacz.commengine.communication.CommError;
 import jacz.commengine.communication.CommunicationModule;
-import jacz.util.concurrency.task_executor.ParallelTask;
-import jacz.util.concurrency.task_executor.SequentialTaskExecutor;
 import jacz.util.fsm.GenericFSM;
 import jacz.util.fsm.TimedFSM;
-import jacz.util.identifier.UniqueIdentifier;
-import jacz.util.identifier.UniqueIdentifierFactory;
-import jacz.util.io.object_serialization.Serializer;
+import jacz.util.id.AlphaNumFactory;
+import jacz.util.io.serialization.Serializer;
 import jacz.util.queues.event_processing.MessageProcessor;
 import jacz.util.queues.event_processing.StopReadingMessages;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Socket;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -63,14 +67,14 @@ public class ChannelModule {
      */
     private static class QueueAndMessageProcessor {
 
-        private final UniqueIdentifier id;
+        private final String id;
 
         private final ArrayBlockingQueue<Object> queue;
 
         private final MessageProcessor messageProcessor;
 
         private QueueAndMessageProcessor(ArrayBlockingQueue<Object> queue, MessageProcessor messageProcessor) {
-            id = UniqueIdentifierFactory.getOneStaticIdentifier();
+            id = AlphaNumFactory.getStaticId();
             this.queue = queue;
             this.messageProcessor = messageProcessor;
         }
@@ -154,9 +158,9 @@ public class ChannelModule {
      */
     private final Set<MessageProcessor> messageProcessorSet;
 
-    private boolean noMoreFSMRegistrationAccepted = false;
+    private final AtomicBoolean alive;
 
-    private final SequentialTaskExecutor sequentialTaskExecutor;
+    private final ExecutorService sequentialTaskExecutor;
 
     /**
      * Creates a ChannelModule
@@ -180,7 +184,7 @@ public class ChannelModule {
      *                           indicates that all channels are used, by a unique thread
      * @throws java.io.IOException an error establishing the communications
      */
-    public ChannelModule(Socket socket, ChannelAction channelAction, Set<Set<Byte>> concurrentChannels, UniqueIdentifier id) throws IOException {
+    public ChannelModule(Socket socket, ChannelAction channelAction, Set<Set<Byte>> concurrentChannels, String id) throws IOException {
         this("", socket, channelAction, concurrentChannels, id);
     }
 
@@ -195,7 +199,7 @@ public class ChannelModule {
      * @throws java.io.IOException an error establishing the communications
      */
     public ChannelModule(String name, Socket socket, ChannelAction channelAction, Set<Set<Byte>> concurrentChannels) throws IOException {
-        this(name, socket, channelAction, concurrentChannels, UniqueIdentifierFactory.getOneStaticIdentifier());
+        this(name, socket, channelAction, concurrentChannels, AlphaNumFactory.getStaticId());
     }
 
     /**
@@ -208,7 +212,7 @@ public class ChannelModule {
      *                           indicates that all channels are used, by a unique thread
      * @throws java.io.IOException an error establishing the communications
      */
-    public ChannelModule(String name, Socket socket, ChannelAction channelAction, Set<Set<Byte>> concurrentChannels, UniqueIdentifier id) throws IOException {
+    public ChannelModule(String name, Socket socket, ChannelAction channelAction, Set<Set<Byte>> concurrentChannels, String id) throws IOException {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // first, the communication module in charge of low level communication, is created
         // then, MessageProcessors for handling incoming messages are created and initialized.
@@ -246,7 +250,8 @@ public class ChannelModule {
         channelConnectionPoint = new ChannelConnectionPoint(this, id);
         channelFSMs = new HashMap<>();
         FSMToChannel = new HashMap<>();
-        sequentialTaskExecutor = new SequentialTaskExecutor();
+        alive = new AtomicBoolean(true);
+        sequentialTaskExecutor = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -321,12 +326,12 @@ public class ChannelModule {
         // to perform any additional action, because that MessageProcessor will die itself.
         // However, if we have additional MessageProcessors for different channel sets, these must be terminated
         // (by giving them a StopReadingMessages
-        stopChannelModule();
         if (!commModule.isError()) {
             channelActionDisconnected(channelConnectionPoint, commModule.isManuallyDisconnected());
         } else {
             channelActionError(channelConnectionPoint, commModule.getError());
         }
+        stopChannelModule();
 
         if (channelQueuesAndMessageProcessors != null) {
             // set with all different queue and message processors (so we only send one message to each queue)
@@ -343,10 +348,11 @@ public class ChannelModule {
     }
 
     private void stopChannelModule() {
-        synchronized (this) {
-            noMoreFSMRegistrationAccepted = true;
+        if (alive.get()) {
+            alive.set(false);
+            detachAllFSMs();
+            sequentialTaskExecutor.shutdown();
         }
-        detachAllFSMs();
     }
 
     /**
@@ -355,7 +361,7 @@ public class ChannelModule {
      * @param channel the channel through which the message is to be sent
      * @param message the message to send
      */
-    long write(byte channel, Object message, boolean flush) {
+    long write(byte channel, Serializable message, boolean flush) {
         // the message is sent as a unique ChannelMessage object
         return commModule.write(new ChannelMessage(channel, message), flush);
     }
@@ -463,12 +469,8 @@ public class ChannelModule {
      *                                  - Any of the given channels is not supported in this ChannelModule
      *                                  - Two of the given channels belong to different handling threads
      */
-    <T> UniqueIdentifier registerNewFSM(ChannelFSMAction<T> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
-        boolean canRegister;
-        synchronized (this) {
-            canRegister = !noMoreFSMRegistrationAccepted;
-        }
-        if (canRegister) {
+    <T> String registerNewFSM(ChannelFSMAction<T> channelFSMAction, String name, byte channel) throws IllegalArgumentException {
+        if (alive.get()) {
             ChannelFSM<T> channelFSM = new ChannelFSM<>(channelFSMAction, channelConnectionPoint);
             GenericFSM<T, Object> genericFSM = new GenericFSM<>(name, channelFSM);
             registerFSM(genericFSM, channel);
@@ -491,12 +493,8 @@ public class ChannelModule {
      *                                  - Any of the given channels is not supported in this ChannelModule
      *                                  - Two of the given channels belong to different handling threads
      */
-    <T> UniqueIdentifier registerNewFSM(TimedChannelFSMAction<T> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
-        boolean canRegister;
-        synchronized (this) {
-            canRegister = !noMoreFSMRegistrationAccepted;
-        }
-        if (canRegister) {
+    <T> String registerNewFSM(TimedChannelFSMAction<T> timedChannelFSMAction, long timeoutMillis, String name, byte channel) throws IllegalArgumentException {
+        if (alive.get()) {
             TimedChannelFSM<T> timedChannelFSM = new TimedChannelFSM<>(this, timedChannelFSMAction, channelConnectionPoint);
             TimedFSM<T, Object> timedFSM = new TimedFSM<>(name, timedChannelFSM, timeoutMillis);
             timedChannelFSM.setGenericFSM(timedFSM);
@@ -580,48 +578,58 @@ public class ChannelModule {
     }
 
     private void channelActionNewMessage(final ChannelConnectionPoint ccp, final byte channel, final Object message) {
-        sequentialTaskExecutor.executeTask(new ParallelTask() {
-            @Override
-            public void performTask() {
-                channelAction.newMessage(ccp, channel, message);
-            }
-        });
+        if (alive.get()) {
+            sequentialTaskExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    channelAction.newMessage(ccp, channel, message);
+                }
+            });
+        }
     }
 
     private void channelActionNewMessage(final ChannelConnectionPoint ccp, final byte channel, final byte[] data) {
-        sequentialTaskExecutor.executeTask(new ParallelTask() {
-            @Override
-            public void performTask() {
-                channelAction.newMessage(ccp, channel, data);
-            }
-        });
+        if (alive.get()) {
+            sequentialTaskExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    channelAction.newMessage(ccp, channel, data);
+                }
+            });
+        }
     }
 
     public void channelActionChannelsFreed(final ChannelConnectionPoint ccp, final byte channel) {
-        sequentialTaskExecutor.executeTask(new ParallelTask() {
-            @Override
-            public void performTask() {
-                channelAction.channelFreed(ccp, channel);
-            }
-        });
+        if (alive.get()) {
+            sequentialTaskExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    channelAction.channelFreed(ccp, channel);
+                }
+            });
+        }
     }
 
     public void channelActionDisconnected(final ChannelConnectionPoint ccp, final boolean expected) {
-        sequentialTaskExecutor.executeTask(new ParallelTask() {
-            @Override
-            public void performTask() {
-                channelAction.disconnected(ccp, expected);
-            }
-        });
+        if (alive.get()) {
+            sequentialTaskExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    channelAction.disconnected(ccp, expected);
+                }
+            });
+        }
     }
 
     public void channelActionError(final ChannelConnectionPoint ccp, final CommError e) {
-        sequentialTaskExecutor.executeTask(new ParallelTask() {
-            @Override
-            public void performTask() {
-                channelAction.error(ccp, e);
-            }
-        });
+        if (alive.get()) {
+            sequentialTaskExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    channelAction.error(ccp, e);
+                }
+            });
+        }
     }
 
     @Override

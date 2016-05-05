@@ -27,7 +27,7 @@ public interface ChannelFSMAction<T> {
      * @return the new state of the FSM
      * @throws IllegalArgumentException if the state is not possible
      */
-    public T processMessage(T currentState, byte channel, Object message, ChannelConnectionPoint ccp) throws IllegalArgumentException;
+    T processMessage(T currentState, byte channel, Object message, ChannelConnectionPoint ccp) throws IllegalArgumentException;
 
     /**
      * This method is invoked when a byte array message arrives from the other end to this FSM
@@ -39,7 +39,7 @@ public interface ChannelFSMAction<T> {
      * @return the new state of the FSM
      * @throws IllegalArgumentException if the state is not possible
      */
-    public T processMessage(T currentState, byte channel, byte[] data, ChannelConnectionPoint ccp) throws IllegalArgumentException;
+    T processMessage(T currentState, byte channel, byte[] data, ChannelConnectionPoint ccp) throws IllegalArgumentException;
 
     /**
      * This method is invoked before any other methods, just one time, for the FSM to initialize itself
@@ -50,7 +50,7 @@ public interface ChannelFSMAction<T> {
      * @param ccp channel connection point object that allows sending information to the other end
      * @return the initial state of the FSM
      */
-    public T init(ChannelConnectionPoint ccp);
+    T init(ChannelConnectionPoint ccp);
 
     /**
      * This method tells if a specific state is final or not
@@ -59,10 +59,10 @@ public interface ChannelFSMAction<T> {
      * @param ccp   channel connection point object that allows sending information to the other end
      * @return true of the state is final, false otherwise
      */
-    public boolean isFinalState(T state, ChannelConnectionPoint ccp);
+    boolean isFinalState(T state, ChannelConnectionPoint ccp);
 
     /**
      * This method is called when we got disconnected from the other peer (it does not matter who disconnected) so the FSM has been stopped
      */
-    public void disconnected(ChannelConnectionPoint ccp);
+    void disconnected(ChannelConnectionPoint ccp);
 }

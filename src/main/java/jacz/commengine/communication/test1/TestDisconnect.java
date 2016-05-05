@@ -1,8 +1,8 @@
 package jacz.commengine.communication.test1;
 
 import jacz.util.concurrency.ThreadUtil;
-import jacz.util.concurrency.task_executor.ParallelTask;
 import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
 
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -14,10 +14,10 @@ import java.util.Arrays;
  */
 public class TestDisconnect {
 
-    public static class ServerTask implements ParallelTask {
+    public static class ServerTask implements Runnable {
 
         @Override
-        public void performTask() {
+        public void run() {
             try {
                 System.out.println("SERVER: starting...");
                 ServerSocket serverSocket = new ServerSocket(45000);
@@ -36,7 +36,8 @@ public class TestDisconnect {
 
     public static void main(String[] args) throws Exception {
 
-        ParallelTaskExecutor.executeTask(new ServerTask());
+        ThreadExecutor.registerClient(TestDisconnect.class.getName());
+        ThreadExecutor.submit(new ServerTask());
 
 
         ThreadUtil.safeSleep(1000);
@@ -58,5 +59,6 @@ public class TestDisconnect {
             System.out.println(e);
         }
         System.out.println("CLIENT: end");
+        ThreadExecutor.shutdownClient(TestDisconnect.class.getName());
     }
 }

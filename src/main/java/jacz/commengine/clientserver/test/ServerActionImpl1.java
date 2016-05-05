@@ -4,7 +4,6 @@ import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.clientserver.server.ServerAction;
 import jacz.commengine.clientserver.server.ServerModule;
 import jacz.commengine.communication.CommError;
-import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.network.IP4Port;
 
 import java.io.IOException;
@@ -27,7 +26,7 @@ class ServerActionImpl1 implements ServerAction {
         this.serverModule = serverModule;
     }
 
-    public void newMessage(UniqueIdentifier idCliente, ChannelConnectionPoint ccp, byte canal, Object mensaje) {
+    public void newMessage(String idCliente, ChannelConnectionPoint ccp, byte canal, Object mensaje) {
         System.out.println("Server1 - mensaje recibido de cliente " + idCliente + " por canal " + canal + ": " + mensaje);
         try {
             //serverModule.writeAll((byte) (canal + 1), new NotSerClass());
@@ -37,16 +36,16 @@ class ServerActionImpl1 implements ServerAction {
         }
     }
 
-    public void newMessage(UniqueIdentifier idCliente, ChannelConnectionPoint ccp, byte canal, byte[] data) {
+    public void newMessage(String idCliente, ChannelConnectionPoint ccp, byte canal, byte[] data) {
         System.out.println("Server1 - byte[] recibido de cliente " + idCliente + " por canal " + canal);
     }
 
     @Override
-    public void channelFreed(UniqueIdentifier idCliente, ChannelConnectionPoint ccp, byte channel) {
+    public void channelFreed(String idCliente, ChannelConnectionPoint ccp, byte channel) {
         System.out.println("Channels freed " + channel);
     }
 
-    public void newClientConnection(UniqueIdentifier idCliente, ChannelConnectionPoint channelConnectionPoint, IP4Port ip4Port) {
+    public void newClientConnection(String idCliente, ChannelConnectionPoint channelConnectionPoint, IP4Port ip4Port) {
         System.out.println("Server1 - nuevo cliente conectado: " + idCliente + " (" + ip4Port.getIp() + ", " + ip4Port.getPort() + "). Informando a los clientes...");
         try {
             serverModule.writeAllBut((byte) 0, "Se ha conectado un nuevo cliente: " + idCliente, idCliente);
@@ -56,11 +55,11 @@ class ServerActionImpl1 implements ServerAction {
         }
     }
 
-    public void clientDisconnected(UniqueIdentifier idCliente, ChannelConnectionPoint ccp, boolean expected) {
+    public void clientDisconnected(String idCliente, ChannelConnectionPoint ccp, boolean expected) {
         System.out.println("client disc: " + idCliente);
     }
 
-    public void clientError(UniqueIdentifier idCliente, ChannelConnectionPoint channelConnectionPoint, CommError e) {
+    public void clientError(String idCliente, ChannelConnectionPoint channelConnectionPoint, CommError e) {
          System.out.println("serv error" + idCliente);
         //e.printStackTrace();
     }

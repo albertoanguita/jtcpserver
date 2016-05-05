@@ -1,7 +1,5 @@
 package jacz.commengine.communication.test1;
 
-import jacz.util.concurrency.task_executor.ParallelTask;
-
 /**
  * Class description
  * <p/>
@@ -9,7 +7,7 @@ import jacz.util.concurrency.task_executor.ParallelTask;
  * Date: 16-dic-2008<br>
  * Last Modified: 16-dic-2008
  */
-public class PT1 implements ParallelTask {
+public class PT1 implements Runnable {
 
     private int port;
 
@@ -17,7 +15,7 @@ public class PT1 implements ParallelTask {
         this.port = port;
     }
 
-    public void performTask() {
+    public void run() {
         Test1 t1 = new Test1("t1");
 
         t1.openServer(port);

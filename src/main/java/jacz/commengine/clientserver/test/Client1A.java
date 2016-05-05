@@ -2,7 +2,6 @@ package jacz.commengine.clientserver.test;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.clientserver.client.ClientModule;
-import jacz.util.concurrency.task_executor.ParallelTask;
 import jacz.util.network.IP4Port;
 
 import java.io.IOException;
@@ -17,7 +16,7 @@ import java.util.Set;
  * Date: 10-ene-2009<br>
  * Last Modified: 10-ene-2009
  */
-class Client1A implements ParallelTask {
+class Client1A implements Runnable {
 
     private int port;
 
@@ -25,7 +24,7 @@ class Client1A implements ParallelTask {
         this.port = port;
     }
 
-    public void performTask() {
+    public void run() {
 
         ClientModule clientModule;
         ChannelActionClient1 channelActionClient1 = new ChannelActionClient1("A");

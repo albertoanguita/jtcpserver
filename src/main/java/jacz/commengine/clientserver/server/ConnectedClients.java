@@ -2,7 +2,6 @@ package jacz.commengine.clientserver.server;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
-import jacz.util.identifier.UniqueIdentifier;
 import jacz.util.network.IP4Port;
 
 import java.util.*;
@@ -45,13 +44,13 @@ class ConnectedClients {
     /**
      * Table with all stored clients
      */
-    private final Map<UniqueIdentifier, ClientInfo> clients;
+    private final Map<String, ClientInfo> clients;
 
     /**
      * Default class constructor
      */
     public ConnectedClients() {
-        clients = new HashMap<UniqueIdentifier, ClientInfo>();
+        clients = new HashMap<>();
     }
 
     /**
@@ -60,7 +59,7 @@ class ConnectedClients {
      * @param id id of the client to check
      * @return true if the specified client exists, false otherwise
      */
-    public synchronized boolean existsClient(UniqueIdentifier id) {
+    public synchronized boolean existsClient(String id) {
         return clients.containsKey(id);
     }
 
@@ -78,8 +77,8 @@ class ConnectedClients {
      *
      * @return a set with the ids of the currently connected clients
      */
-    public synchronized Set<UniqueIdentifier> getClientIDs() {
-        return new HashSet<UniqueIdentifier>(clients.keySet());
+    public synchronized Set<String> getClientIDs() {
+        return new HashSet<>(clients.keySet());
     }
 
     /**
@@ -88,8 +87,8 @@ class ConnectedClients {
      * @param clientsNot set of ids to exclude from the final result
      * @return collection of connected client ids, excluding the values in clientsNot
      */
-    public synchronized Set<UniqueIdentifier> getClientIDsExcept(Collection<UniqueIdentifier> clientsNot) {
-        Set<UniqueIdentifier> clientIDs = new HashSet<UniqueIdentifier>(clients.keySet());
+    public synchronized Set<String> getClientIDsExcept(Collection<String> clientsNot) {
+        Set<String> clientIDs = new HashSet<>(clients.keySet());
         clientIDs.removeAll(clientsNot);
         return clientIDs;
     }
@@ -100,8 +99,8 @@ class ConnectedClients {
      * @param clientsNot list of ids to exclude from the final result
      * @return list of connected client ids, excluding the values in clientsNot
      */
-    public synchronized Set<UniqueIdentifier> getClientIDsExcept(UniqueIdentifier... clientsNot) {
-        Collection<UniqueIdentifier> clientsNotSet = new HashSet<UniqueIdentifier>(Arrays.asList(clientsNot));
+    public synchronized Set<String> getClientIDsExcept(String... clientsNot) {
+        Collection<String> clientsNotSet = new HashSet<>(Arrays.asList(clientsNot));
         return getClientIDsExcept(clientsNotSet);
     }
 
@@ -111,7 +110,7 @@ class ConnectedClients {
      * @param clientID id of the client
      * @return the channel connection point of the requested client
      */
-    public synchronized ChannelConnectionPoint getCCP(UniqueIdentifier clientID) {
+    public synchronized ChannelConnectionPoint getCCP(String clientID) {
         return existsClient(clientID) ? clients.get(clientID).channelConnectionPoint : null;
     }
 
@@ -121,7 +120,7 @@ class ConnectedClients {
      * @param clientID id of the client
      * @return the IP4Port object of the requested client
      */
-    public synchronized IP4Port getClientIP4Port(UniqueIdentifier clientID) {
+    public synchronized IP4Port getClientIP4Port(String clientID) {
         return existsClient(clientID) ? clients.get(clientID).ip4Port : null;
     }
 
@@ -142,7 +141,7 @@ class ConnectedClients {
      *
      * @param clientID id of the client to remove
      */
-    public synchronized void removeClient(UniqueIdentifier clientID) {
+    public synchronized void removeClient(String clientID) {
         clients.remove(clientID);
     }
 }

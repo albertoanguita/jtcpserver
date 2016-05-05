@@ -15,9 +15,9 @@ class ChannelMessage implements Serializable {
     /**
      * The message itself
      */
-    Object message;
+    Serializable message;
 
-    ChannelMessage(byte canal, Object message) {
+    ChannelMessage(byte canal, Serializable message) {
         this.canal = canal;
         this.message = message;
     }

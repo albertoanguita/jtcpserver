@@ -3,8 +3,7 @@ package jacz.commengine.channel.tests.test2;
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
 import jacz.commengine.channel.tests.test1.AccionCanal1;
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
-import jacz.util.concurrency.task_executor.TaskFinalizationIndicator;
+import jacz.util.concurrency.task_executor.ThreadExecutor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,6 +12,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by IntelliJ IDEA.
@@ -105,19 +106,20 @@ public class Test2 {
     }*/
 
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ExecutionException, InterruptedException {
 
+        ThreadExecutor.registerClient(Test2.class.getName());
         final int port = 50000;
 
 
-        TaskFinalizationIndicator tfi1 = ParallelTaskExecutor.executeTask(new Server(port));
-        TaskFinalizationIndicator tfi2 = ParallelTaskExecutor.executeTask(new Client(port));
+        Future future1 = ThreadExecutor.submit(new Server(port));
+        Future future2 = ThreadExecutor.submit(new Client(port));
 
-        tfi1.waitForFinalization();
-        tfi2.waitForFinalization();
+        future1.get();
+        future2.get();
 
         System.out.println("FIN");
-
+        ThreadExecutor.shutdownClient(Test2.class.getName());
     }
 
 

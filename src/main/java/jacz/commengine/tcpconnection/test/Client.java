@@ -1,7 +1,6 @@
 package jacz.commengine.tcpconnection.test;
 
 import jacz.commengine.tcpconnection.client.TCPClient;
-import jacz.util.concurrency.task_executor.ParallelTask;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -15,7 +14,7 @@ import java.util.Arrays;
  * Time: 17:46:06
  * To change this template use File | Settings | File Templates.
  */
-public class Client implements ParallelTask {
+public class Client implements Runnable {
 
     private String ip;
 
@@ -28,7 +27,7 @@ public class Client implements ParallelTask {
         this.port = port;
     }
 
-    public void performTask() {
+    public void run() {
         try {
             socket = TCPClient.connect(ip, port);
             ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
