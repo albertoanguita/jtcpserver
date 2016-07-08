@@ -3,7 +3,7 @@ package jacz.commengine.clientserver.server;
 import jacz.commengine.communication.CommunicationModule;
 import jacz.commengine.tcpconnection.server.TCPServer;
 import jacz.commengine.tcpconnection.server.TCPServerAction;
-import jacz.util.concurrency.task_executor.ThreadExecutor;
+import org.aanguita.jacuzzi.concurrency.task_executor.ThreadExecutor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

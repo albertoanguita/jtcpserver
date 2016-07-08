@@ -1,8 +1,8 @@
 package jacz.commengine.communication.test1;
 
-import jacz.util.concurrency.ThreadUtil;
-import jacz.util.concurrency.task_executor.ParallelTaskExecutor;
-import jacz.util.concurrency.task_executor.ThreadExecutor;
+import org.aanguita.jacuzzi.concurrency.ThreadUtil;
+import org.aanguita.jacuzzi.concurrency.task_executor.ParallelTaskExecutor;
+import org.aanguita.jacuzzi.concurrency.task_executor.ThreadExecutor;
 
 import java.io.InputStream;
 import java.net.ServerSocket;

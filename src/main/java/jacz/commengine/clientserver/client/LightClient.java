@@ -2,7 +2,7 @@ package jacz.commengine.clientserver.client;
 
 import jacz.commengine.communication.CommunicationModule;
 import jacz.commengine.tcpconnection.client.TCPClient;
-import jacz.util.network.IP4Port;
+import org.aanguita.jacuzzi.network.IP4Port;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

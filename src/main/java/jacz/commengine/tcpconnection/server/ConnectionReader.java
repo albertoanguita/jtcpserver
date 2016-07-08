@@ -1,7 +1,7 @@
 package jacz.commengine.tcpconnection.server;
 
-import jacz.util.queues.event_processing.MessageReader;
-import jacz.util.queues.event_processing.StopReadingMessages;
+import org.aanguita.jacuzzi.queues.event_processing.MessageReader;
+import org.aanguita.jacuzzi.queues.event_processing.StopReadingMessages;
 
 import java.io.IOException;
 import java.net.ServerSocket;

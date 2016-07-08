@@ -2,8 +2,8 @@ package jacz.commengine.communication.test1;
 
 import jacz.commengine.communication.ByteArrayWrapper;
 import jacz.commengine.communication.CommunicationModule;
-import jacz.util.concurrency.task_executor.ThreadExecutor;
-import jacz.util.date_time.TimeElapsed;
+import org.aanguita.jacuzzi.concurrency.task_executor.ThreadExecutor;
+import org.aanguita.jacuzzi.date_time.TimeElapsed;
 
 import java.io.IOException;
 import java.io.Serializable;

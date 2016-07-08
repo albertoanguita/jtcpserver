@@ -2,7 +2,7 @@ package jacz.commengine.clientserver.server;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
-import jacz.util.network.IP4Port;
+import org.aanguita.jacuzzi.network.IP4Port;
 
 import java.util.*;
 

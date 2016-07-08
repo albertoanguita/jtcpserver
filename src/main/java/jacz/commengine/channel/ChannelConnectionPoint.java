@@ -1,6 +1,6 @@
 package jacz.commengine.channel;
 
-import jacz.util.id.AlphaNumFactory;
+import org.aanguita.jacuzzi.id.AlphaNumFactory;
 
 import java.io.Serializable;
 

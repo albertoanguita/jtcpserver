@@ -2,12 +2,12 @@ package jacz.commengine.channel;
 
 import jacz.commengine.communication.CommError;
 import jacz.commengine.communication.CommunicationModule;
-import jacz.util.fsm.GenericFSM;
-import jacz.util.fsm.TimedFSM;
-import jacz.util.id.AlphaNumFactory;
-import jacz.util.io.serialization.Serializer;
-import jacz.util.queues.event_processing.MessageProcessor;
-import jacz.util.queues.event_processing.StopReadingMessages;
+import org.aanguita.jacuzzi.fsm.GenericFSM;
+import org.aanguita.jacuzzi.fsm.TimedFSM;
+import org.aanguita.jacuzzi.id.AlphaNumFactory;
+import org.aanguita.jacuzzi.io.serialization.Serializer;
+import org.aanguita.jacuzzi.queues.event_processing.MessageProcessor;
+import org.aanguita.jacuzzi.queues.event_processing.StopReadingMessages;
 
 import java.io.IOException;
 import java.io.Serializable;

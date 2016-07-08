@@ -1,7 +1,7 @@
 package jacz.commengine.clientserver.test;
 
 import jacz.commengine.clientserver.server.ServerModule;
-import jacz.util.io.IOUtil;
+import org.aanguita.jacuzzi.io.IOUtil;
 
 import java.io.IOException;
 import java.util.HashSet;

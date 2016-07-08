@@ -1,6 +1,6 @@
 package jacz.commengine.channel;
 
-import jacz.util.queues.event_processing.MessageHandler;
+import org.aanguita.jacuzzi.queues.event_processing.MessageHandler;
 
 /**
  * This MessageHandler implementation is in charge of sending incoming messages from the CommunicationModule to

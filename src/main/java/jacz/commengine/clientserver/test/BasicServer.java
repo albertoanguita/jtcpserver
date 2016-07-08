@@ -2,7 +2,7 @@ package jacz.commengine.clientserver.test;
 
 import jacz.commengine.clientserver.server.LightServer;
 import jacz.commengine.clientserver.server.LightServerActionObject;
-import jacz.util.concurrency.ThreadUtil;
+import org.aanguita.jacuzzi.concurrency.ThreadUtil;
 
 import java.io.IOException;
 import java.io.Serializable;

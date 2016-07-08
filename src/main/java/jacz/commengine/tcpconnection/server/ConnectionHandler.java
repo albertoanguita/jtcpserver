@@ -1,6 +1,6 @@
 package jacz.commengine.tcpconnection.server;
 
-import jacz.util.queues.event_processing.MessageHandler;
+import org.aanguita.jacuzzi.queues.event_processing.MessageHandler;
 
 import java.io.IOException;
 import java.net.Socket;

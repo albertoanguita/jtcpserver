@@ -2,7 +2,7 @@ package jacz.commengine.clientserver.test;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.clientserver.client.ClientModule;
-import jacz.util.network.IP4Port;
+import org.aanguita.jacuzzi.network.IP4Port;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

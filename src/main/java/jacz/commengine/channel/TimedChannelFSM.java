@@ -1,7 +1,7 @@
 package jacz.commengine.channel;
 
-import jacz.util.fsm.GenericFSM;
-import jacz.util.fsm.TimedFSMAction;
+import org.aanguita.jacuzzi.fsm.GenericFSM;
+import org.aanguita.jacuzzi.fsm.TimedFSMAction;
 
 /**
  * This class implements the actions for a TimedFSM. The actual implementation is delegated to a TimedChannelFSMAction,

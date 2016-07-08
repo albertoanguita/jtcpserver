@@ -1,7 +1,7 @@
 package jacz.commengine.tcpconnection.test;
 
-import jacz.util.concurrency.task_executor.ThreadExecutor;
-import jacz.util.io.IOUtil;
+import org.aanguita.jacuzzi.concurrency.task_executor.ThreadExecutor;
+import org.aanguita.jacuzzi.io.IOUtil;
 
 import java.util.concurrent.Future;
 

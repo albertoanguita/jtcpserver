@@ -1,9 +1,9 @@
 package jacz.commengine.communication;
 
-import jacz.util.io.serialization.MutableOffset;
-import jacz.util.io.serialization.Serializer;
-import jacz.util.queues.event_processing.MessageReader;
-import jacz.util.queues.event_processing.StopReadingMessages;
+import org.aanguita.jacuzzi.io.serialization.MutableOffset;
+import org.aanguita.jacuzzi.io.serialization.Serializer;
+import org.aanguita.jacuzzi.queues.event_processing.MessageReader;
+import org.aanguita.jacuzzi.queues.event_processing.StopReadingMessages;
 
 import java.io.IOException;
 import java.io.InputStream;

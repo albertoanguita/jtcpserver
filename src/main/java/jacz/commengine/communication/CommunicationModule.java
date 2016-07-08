@@ -1,9 +1,9 @@
 package jacz.commengine.communication;
 
-import jacz.util.date_time.TimeElapsed;
-import jacz.util.io.serialization.MutableOffset;
-import jacz.util.io.serialization.Serializer;
-import jacz.util.queues.event_processing.MessageProcessor;
+import org.aanguita.jacuzzi.date_time.TimeElapsed;
+import org.aanguita.jacuzzi.io.serialization.MutableOffset;
+import org.aanguita.jacuzzi.io.serialization.Serializer;
+import org.aanguita.jacuzzi.queues.event_processing.MessageProcessor;
 
 import java.io.*;
 import java.net.Socket;

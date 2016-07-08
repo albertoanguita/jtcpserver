@@ -3,7 +3,7 @@ package jacz.commengine.channel.tests.test2;
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
 import jacz.commengine.channel.tests.test1.AccionCanal1;
-import jacz.util.concurrency.task_executor.ThreadExecutor;
+import org.aanguita.jacuzzi.concurrency.task_executor.ThreadExecutor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

@@ -2,7 +2,7 @@ package jacz.commengine.clientserver.server;
 
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.communication.CommError;
-import jacz.util.network.IP4Port;
+import org.aanguita.jacuzzi.network.IP4Port;
 
 /**
  * This interface contains the methods required for using a ServerModule. These handle the arrival of messages from

@@ -1,6 +1,6 @@
 package jacz.commengine.channel;
 
-import jacz.util.queues.event_processing.MessageReader;
+import org.aanguita.jacuzzi.queues.event_processing.MessageReader;
 
 import java.util.concurrent.ArrayBlockingQueue;
 

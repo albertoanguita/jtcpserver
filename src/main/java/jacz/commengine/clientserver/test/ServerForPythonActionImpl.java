@@ -3,7 +3,7 @@ package jacz.commengine.clientserver.test;
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.clientserver.server.ServerAction;
 import jacz.commengine.communication.CommError;
-import jacz.util.network.IP4Port;
+import org.aanguita.jacuzzi.network.IP4Port;
 
 import java.util.Arrays;
 

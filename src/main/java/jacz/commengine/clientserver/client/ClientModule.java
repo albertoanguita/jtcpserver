@@ -4,7 +4,7 @@ import jacz.commengine.channel.ChannelAction;
 import jacz.commengine.channel.ChannelConnectionPoint;
 import jacz.commengine.channel.ChannelModule;
 import jacz.commengine.tcpconnection.client.TCPClient;
-import jacz.util.network.IP4Port;
+import org.aanguita.jacuzzi.network.IP4Port;
 
 import java.io.IOException;
 import java.net.Socket;

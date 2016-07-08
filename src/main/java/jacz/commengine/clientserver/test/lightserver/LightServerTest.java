@@ -2,8 +2,8 @@ package jacz.commengine.clientserver.test.lightserver;
 
 import jacz.commengine.clientserver.client.LightClient;
 import jacz.commengine.clientserver.server.LightServer;
-import jacz.util.concurrency.ThreadUtil;
-import jacz.util.network.IP4Port;
+import org.aanguita.jacuzzi.concurrency.ThreadUtil;
+import org.aanguita.jacuzzi.network.IP4Port;
 
 import java.io.IOException;
 

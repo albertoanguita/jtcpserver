@@ -62,9 +62,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>jacz.util</groupId>
-      <artifactId>util</artifactId>
-      <version>0.1</version>
+      <groupId>org.aanguita</groupId>
+      <artifactId>jacuzzi</artifactId>
+      <version>1.0.0</version>
     </dependency>
   </dependencies>
 </project>

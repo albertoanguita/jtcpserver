@@ -1,6 +1,6 @@
 package jacz.commengine.channel;
 
-import jacz.util.fsm.GenericFSMAction;
+import org.aanguita.jacuzzi.fsm.GenericFSMAction;
 
 /**
  * This class implements a channel FSM through the interface of a generic FSM. Actions are delegated to a ChannelFSMAction object
