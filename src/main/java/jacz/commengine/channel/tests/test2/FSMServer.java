@@ -133,7 +133,7 @@ public class FSMServer implements ChannelFSMAction<FSMServer.FSMServerStates> {
     }
 
     @Override
-    public void raisedUnhandledException(Exception e) {
+    public void raisedUnhandledException(Exception e, ChannelConnectionPoint cpp) {
         e.printStackTrace();
     }
 }

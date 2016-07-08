@@ -72,5 +72,5 @@ public interface ChannelFSMAction<T> {
      *
      * @param e raised exception
      */
-    void raisedUnhandledException(Exception e);
+    void raisedUnhandledException(Exception e, ChannelConnectionPoint ccp);
 }

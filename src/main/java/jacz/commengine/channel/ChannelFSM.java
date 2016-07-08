@@ -52,6 +52,6 @@ public class ChannelFSM<T> implements GenericFSMAction<T, Object> {
 
     @Override
     public void raisedUnhandledException(Exception e) {
-        channelFSMAction.raisedUnhandledException(e);
+        channelFSMAction.raisedUnhandledException(e, ccp);
     }
 }

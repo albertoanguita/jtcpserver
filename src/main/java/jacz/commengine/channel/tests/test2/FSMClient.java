@@ -133,7 +133,7 @@ public class FSMClient implements ChannelFSMAction<FSMClient.FSMClientStates> {
     }
 
     @Override
-    public void raisedUnhandledException(Exception e) {
+    public void raisedUnhandledException(Exception e, ChannelConnectionPoint cpp) {
         e.printStackTrace();
     }
 }
