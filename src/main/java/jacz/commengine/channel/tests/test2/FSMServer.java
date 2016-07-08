@@ -58,7 +58,7 @@ public class FSMServer implements ChannelFSMAction<FSMServer.FSMServerStates> {
         return null;
     }
 
-    public FSMServerStates processMessage(FSMServerStates currentState, byte channel, byte[] data, ChannelConnectionPoint cpp) throws IllegalArgumentException {
+    public FSMServerStates processMessage(FSMServerStates currentState, byte channel, byte[] data, ChannelConnectionPoint cpp) {
         // incorrect data from client --> inform client and disconnect
         System.out.println("Server: byte array not expected. Disconnecting");
         cpp.write((byte) 0, "Wrong data");

@@ -39,7 +39,7 @@ public interface ChannelFSMAction<T> {
      * @return the new state of the FSM
      * @throws IllegalArgumentException if the state is not possible
      */
-    T processMessage(T currentState, byte channel, byte[] data, ChannelConnectionPoint ccp) throws IllegalArgumentException;
+    T processMessage(T currentState, byte channel, byte[] data, ChannelConnectionPoint ccp);
 
     /**
      * This method is invoked before any other methods, just one time, for the FSM to initialize itself

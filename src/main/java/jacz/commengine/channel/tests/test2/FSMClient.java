@@ -110,7 +110,7 @@ public class FSMClient implements ChannelFSMAction<FSMClient.FSMClientStates> {
         return FSMClientStates.FINAL;
     }
 
-    public FSMClientStates processMessage(FSMClientStates state, byte channel, byte[] data, ChannelConnectionPoint cpp) throws IllegalArgumentException {
+    public FSMClientStates processMessage(FSMClientStates state, byte channel, byte[] data, ChannelConnectionPoint cpp) {
         // incorrect data from client --> inform client and disconnect
         System.out.println("Client: byte array not expected. Disconnecting");
         cpp.write((byte) 0, "Wrong data");
