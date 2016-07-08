@@ -131,4 +131,9 @@ public class FSMClient implements ChannelFSMAction<FSMClient.FSMClientStates> {
     public void disconnected(ChannelConnectionPoint cpp) {
         System.out.println("FSM disconnected");
     }
+
+    @Override
+    public void raisedUnhandledException(Exception e) {
+        e.printStackTrace();
+    }
 }

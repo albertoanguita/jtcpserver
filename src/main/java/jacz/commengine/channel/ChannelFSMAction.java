@@ -65,4 +65,12 @@ public interface ChannelFSMAction<T> {
      * This method is called when we got disconnected from the other peer (it does not matter who disconnected) so the FSM has been stopped
      */
     void disconnected(ChannelConnectionPoint ccp);
+
+    /**
+     * Invoked when the implementation of this channel fsm action raised an exception in any op its methods.
+     * The associated FSM will be detached afterwards
+     *
+     * @param e raised exception
+     */
+    void raisedUnhandledException(Exception e);
 }

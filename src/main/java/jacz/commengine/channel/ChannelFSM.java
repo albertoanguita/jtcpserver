@@ -49,4 +49,9 @@ public class ChannelFSM<T> implements GenericFSMAction<T, Object> {
         // this FSM has been stopped due to the disconnection of this channel module -> notify
         channelFSMAction.disconnected(ccp);
     }
+
+    @Override
+    public void raisedUnhandledException(Exception e) {
+        channelFSMAction.raisedUnhandledException(e);
+    }
 }
