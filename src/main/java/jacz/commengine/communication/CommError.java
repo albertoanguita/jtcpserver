@@ -5,7 +5,7 @@ package jacz.commengine.communication;
  */
 public class CommError {
 
-    public static enum Type {
+    public enum Type {
         WRITE_NON_SERIALIZABLE_OBJECT("Attempt to write a non-serializable object"),
         CLASS_CANNOT_BE_SERIALIZED("Unable to serialize a class when writing"),
         UNKNOWN_CLASS_RECEIVED("An unknown class was received"),
@@ -24,13 +24,20 @@ public class CommError {
 
     private final String reason;
 
+    private final Exception e;
+
     CommError(Type type, Exception e) {
         this.type = type;
         reason = type.str + " (" + e.getMessage() + ")";
+        this.e = e;
     }
 
     public Type getType() {
         return type;
+    }
+
+    public Exception getException() {
+        return e;
     }
 
     @Override
